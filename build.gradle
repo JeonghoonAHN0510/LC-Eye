@@ -38,12 +38,16 @@ dependencies {
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
     // [6] AOP 관점지향 프로그래밍
     implementation 'org.springframework.boot:spring-boot-starter-aop'
-    // [7] noSQL REDIS
+    // [7] NoSQL REDIS
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     // [8] 비크립트( 암호화 )
     implementation 'org.springframework.security:spring-security-crypto:6.4.4'
     // [9] JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // [10] JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 }
 
 tasks.named('test') {
