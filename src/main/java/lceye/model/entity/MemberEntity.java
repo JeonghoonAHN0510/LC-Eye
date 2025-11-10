@@ -25,7 +25,7 @@ public class MemberEntity extends BaseTime{
     private String mid;
     @Column(columnDefinition = "varchar(18) not null")
     private String mpwd;
-    @Column(columnDefinition = "enum('admin', 'manager', 'worker') default 'worker'")
+    @Column(columnDefinition = "enum('ADMIN', 'MANAGER', 'WORKER') default 'WORKER'")
     private String mrole;
     @Column(columnDefinition = "varchar(50) not null unique")
     private String memail;
@@ -49,7 +49,7 @@ public class MemberEntity extends BaseTime{
                 .mphone(this.mphone)
                 .mpwd(this.mpwd)
                 .mphone(this.mphone)
-                .updatedate(this.getCreatedate().toString())
+                .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
                 .cno(this.companyEntity.getCno())
                 .build();

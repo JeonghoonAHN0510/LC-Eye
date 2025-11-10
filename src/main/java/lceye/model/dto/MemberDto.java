@@ -25,7 +25,7 @@ public class MemberDto {
     private String updatedate;
 
     // 2. 부가적인 정보
-
+    private String token;
 
     // 3. toEntity 생성
     public MemberEntity toEntity(){
