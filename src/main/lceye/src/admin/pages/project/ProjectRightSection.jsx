@@ -1,5 +1,5 @@
 import ProjectBasicInfo from "../../components/project/ProjectBasicInfo";
-import ProjectInput from "../../components/project/ProjectInput";
+import ProjectExchange from "../../components/project/ProjectExchange.jsx";
 import ProjectResult from "../../components/project/ProjectResult";
 
 export default function ProjectRightSection(props){
@@ -8,7 +8,7 @@ export default function ProjectRightSection(props){
         <div>
             저장 BUTTON <br />
             <ProjectBasicInfo/>
-            <ProjectInput/>
+            <ProjectExchange/>
             <ProjectResult/>
         </div>
         </>

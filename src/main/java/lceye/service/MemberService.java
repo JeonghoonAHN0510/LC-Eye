@@ -38,7 +38,7 @@ public class MemberService {
         MemberDto result = memberEntity.toDto();
         result.setToken(token);
         // 4. 발급받은 토큰을 Redis에 저장 : 토큰의 유효시간이 1시간이기에 Redis에도 1시간 적용
-        String key = "member:" + memberEntity.getMid();
+        String key = "member:" + memberEntity.getMno();     // member:10001
         memberTemplate.opsForValue().set(key, token, Duration.ofHours(1));
         // 5. 최종적으로 토큰이 담긴 Dto 반환
         return result;

@@ -1,8 +1,8 @@
-export default function ProjectInput(props){
+export default function ProjectExchange(props){
     return(
         <>
         <div>
-            ProjectInput
+            ProjectExchange
         </div>
         </>
     ) // return end
