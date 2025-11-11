@@ -36,7 +36,6 @@ public class MemberDto {
                 .mrole(this.mrole)
                 .memail(this.memail)
                 .mphone(this.mphone)
-                .companyEntity(CompanyEntity.builder().cno(this.cno).build())
                 .build();
     } // func end
 } // class end

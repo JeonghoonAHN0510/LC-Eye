@@ -51,7 +51,6 @@ public class MemberEntity extends BaseTime{
                 .mphone(this.mphone)
                 .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
-                .cno(this.companyEntity.getCno())
                 .build();
     } // func end
 } // class end
