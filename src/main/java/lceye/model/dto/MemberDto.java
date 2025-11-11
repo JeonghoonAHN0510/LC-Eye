@@ -1,6 +1,5 @@
 package lceye.model.dto;
 
-import lceye.model.entity.CompanyEntity;
 import lceye.model.entity.MemberEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
