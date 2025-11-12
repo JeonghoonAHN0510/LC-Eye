@@ -4,6 +4,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import jakarta.transaction.Transactional;
 import lceye.model.dto.MemberDto;
@@ -54,11 +57,43 @@ public class MemberService {
      * @author AhnJH
      */
     public boolean logout(String token){
-        // 1. 토큰트로부터 요청한 회원번호 추출하기
+        // 0. 토큰이 유효한지 확인   // todo 추후 AOP
+        if (!jwtService.validateToken(token)) return false;
+        // 1. 토큰으로부터 요청한 회원번호 추출하기
         int loginMno = jwtService.getMnoFromClaims(token);
         // 2. 회원번호를 토대로 토큰 key 생성
         String key = "member:" + loginMno;
         // 3. 요청한 로그인정보를 Redis에서 제거
         return memberTemplate.delete(key);
+    } // func end
+
+    /**
+     * [MB-03] 로그인 정보 확인(getInfo)
+     * <p>
+     * 요청한 회원의 [로그인 여부, 권한, 회원명, 회사명]을 반환한다.
+     * @param token 요청한 회원의 token 정보
+     * @return 요청한 회원의 정보
+     * @author AhnJH
+     */
+    public Map<String, Object> getInfo(String token){
+        // 0. 토큰이 유효한지 확인   // todo 추후 AOP
+        if (!jwtService.validateToken(token)) return null;
+        // 1. 토큰으로부터 요청한 회원번호, 권한, 회사명 추출하기
+        int mno = jwtService.getMnoFromClaims(token);
+        String role = jwtService.getRoleFromClaims(token);
+        String cname = jwtService.getCnameFromClaims(token);
+        // 2. 회원번호로 회원명 추출하기
+        Optional<MemberEntity> memberEntity = memberRepository.findById(mno);
+        String mname = null;
+        if (memberEntity.isPresent()){
+            mname = memberEntity.get().getMname();
+        } // if end
+        // 3. 추출한 정보를 Map 형식으로 변환하기
+        Map<String, Object> infoByToken = new HashMap<>();
+        infoByToken.put("mname", mname);
+        infoByToken.put("role", role);
+        infoByToken.put("cname", cname);
+        // 4. 변환한 Map 반환하기
+        return infoByToken;
     } // func end
 } // class end

@@ -3,6 +3,10 @@ package lceye.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,14 +43,14 @@ public class MemberController {
             Cookie cookie = new Cookie("loginMember", result.getToken());
             // 4. 쿠키 노출 및 탈취 방지
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
+            cookie.setSecure(false);        // https에서만 true를 사용할 수 있어서 false로 설정
             cookie.setPath("/");
             cookie.setMaxAge(3600);     // 토큰 및 Redis의 유효시간이 1시간
             // 5. 생성한 쿠키를 클라이언트에게 반환
             response.addCookie(cookie);
+            result.setToken(null);
         } // if end
         // 6. 최종적으로 결과 반환
-        result.setToken(null);
         return ResponseEntity.ok(result);
     } // func end
 
@@ -75,9 +79,34 @@ public class MemberController {
         return ResponseEntity.ok(memberService.logout(token));
     } // func end
 
-//    public ResponseEntity<?> getInfo(@CookieValue(value = "loginMember", required = false) String token){
-//        // 1.
-//    } // func end
+    /**
+     * [MB-03] 로그인 정보 확인(getInfo)
+     * <p>
+     * 요청한 회원의 [로그인 여부, 권한, 회원명, 회사명]을 반환한다.
+     * @param token 요청한 회원의 token 정보
+     * @return 요청한 회원의 정보
+     * @author AhnJH
+     */
+    @GetMapping("/getinfo")
+    public ResponseEntity<?> getInfo(@CookieValue(value = "loginMember", required = false) String token){
+        // 1. 쿠키 내 토큰이 존재하고
+        if (token != null){
+            Map<String, Object> infoByToken = memberService.getInfo(token);
+            // 2. 해당 토큰이 유효하여 정보 추출에 성공했다면
+            if (infoByToken != null){
+                // 3. 로그인여부를 표시하고
+                infoByToken.put("isAuth", true);
+                // 4. HTTP 200으로 반환
+                return ResponseEntity.status(200).body(infoByToken);
+            } // if end
+        } // if end
+        // 5. 비로그인 상태라면
+        Map<String, Object> result = new HashMap<>();          // infoByToken이 null일 수 있기에, 재정의 해주기
+        // 6. 비로그인을 표시하고
+        result.put("isAuth", false);
+        // 7. HTTP 403으로 반환
+        return ResponseEntity.status(403).body(result);
+    } // func end
 
     // 임시 로그인 확인용
     @Deprecated
