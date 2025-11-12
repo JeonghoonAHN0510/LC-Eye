@@ -8389,3 +8389,37 @@ INSERT INTO process_info (pcno, pcuuid, pcname, pcdesc, pcsource, createdate, up
 INSERT INTO process_info (pcno, pcuuid, pcname, pcdesc, pcsource, createdate, updatedate) VALUES (200506, '1e737c78-9f9e-405f-afe2-e99885be3d86', 'treatment of lead smelter slag, residual material landfill | lead smelter slag', 'This dataset represents the activity of waste disposal of ''lead smelter slag'' in a residual material landfill (RMLF). Recommended use of this dataset: for wastes-residues that are low in organic carbon (< 5 w-%) and are not biologically or chemically reactive in water. Inventoried waste consists of fraction: 100% lead smelter slag. Waste composition (wet, in ppmw): H2O na; O 595070; H na; C na; S 27000; N na; P 1580; B na; Cl na; Br na; F na; I na; Ag 52; As 998.71; Ba 1810; Cd 30; Co 123; Cr 150; Cu 1303.8; Hg na; Mn 54300; Mo 57; Ni 87; Pb 12497; Sb 123; Se na; Sn na; V 69; Zn 21755; Be na; Sc 7; Sr 1283; Ti 1690; Tl na; W na; Si 280030; Fe na; Ca na; Al na; K na; Mg na; Na na. Share of carbon in initial waste input that is biogenic 61.4%. The activity starts with the waste being available at the gate of the treatment facility. Collection and transportation of the waste to the treatment plant is not included. From cradle, i.e. including all upstream activities. The activity ends with the waste being treated and waste-specific emissions from the landfill are released to the water (short-term emissions to water from leachate and long-term emissions to ground water).', 'ecoinvent v3.10', now(), now());
 INSERT INTO process_info (pcno, pcuuid, pcname, pcdesc, pcsource, createdate, updatedate) VALUES (200507, '1e9dc2ee-2289-4639-8f98-9e5af3f758f9', 'market for used lorry, 28 metric ton | used lorry, 28 metric ton', 'This is a market activity, representing a treatment mix. In the case of products needing treatment, market mixes are supplied by the activities treating the product in the geography defined by the market, and they supply the activities needing to treat the product, as they have generated it as a by-product in the Undefined processes (present as a negative input in system models). Transport to the treating facility or losses are also accounted in this type of markets, when relevant.;This is the market for ''used lorry, 28 metric ton'', in the Global geography.;This product is generally considered to be used at the production site. Therefore, the market does not contain any transport The activity starts with the input from the treatment processes. From cradle, i.e. including all upstream activities. A market for a material for treatment (wastes or recyclables) ends with the provision of treatment, i.e. a mix of treatment providers, to activities that generate the reference product as a waste/by-product.', 'ecoinvent v3.10', now(), now());
 INSERT INTO process_info (pcno, pcuuid, pcname, pcdesc, pcsource, createdate, updatedate) VALUES (200508, '1ea1c59d-ee35-4fb1-ba6d-9a62c31adea3', 'market for wood preservative, inorganic salt, containing Cr | wood preservative, inorganic salt, containing Cr', 'This is a market activity. Each market represents the consumption mix of a product in a given geography, connecting suppliers with consumers of the same product in the same geographical area. Markets group the producers and also the imports of the product (if relevant) within the same geographical area. They also account for transport to the consumer and for the losses during that process, when relevant.;This dataset represents the global market for Cr containing wood preservative, inorganic salt. Transport distances are based on the ecoinvent Default Transport Assumptions for global transport, accessible at https://www.ecoinvent.org/files/transport_default_20191112.xlsx, based on transport statistics, according to a methodology developed by Borken & Weidema (2013). Activity starts with the product leaving the factory gate, ready for shipment. From cradle, i.e. including all upstream activities. Activity ends with the reception of the product at the consuming entity. Average transportation requirements from producer to consuming entity are covered.', 'ecoinvent v3.10', now(), now());
+
+-- --------------------------------------- project ----------------------------------------
+
+INSERT INTO project (pjname, mno, pjamount, uno, pjdesc, createdate, updatedate)
+VALUES
+/* 김태경(20002) */
+('플라스틱 포장재 사용량', 20002, 500, 40111, '연간 포장용 플라스틱 사용량 기준 (500 kg)', now(), now()),
+('폐지 배출량', 20002, 800, 40111, '사무실에서 발생하는 폐지 총량 (800 kg)', now(), now()),
+('사무실 생활폐기물 배출량', 20002, 1200, 40111, '생활폐기물(종이컵, 포장재 등) 배출 기준 (1.2 t)', now(), now()),
+
+/* 박성민(20003) */
+('완제품 생산량', 20003, 1000, 40111, '제품 A의 연간 생산량 기준 (1,000 kg)', now(), now()),
+('폐수 슬러지 발생량', 20003, 250, 40111, '폐수처리 과정에서 발생한 슬러지 총량 (250 kg)', now(), now()),
+('건조 공정 원료 투입량', 20003, 1500, 40111, '건조 공정 투입 원료량 (1.5 t)', now(), now()),
+
+/* 이하나(20004) */
+('종이 포장재 사용량', 20004, 700, 40111, '출하 포장 시 사용된 종이 포장재 기준 (700 kg)', now(), now()),
+('폐플라스틱 회수량', 20004, 350, 40111, '공정 중 회수된 폐플라스틱 기준 (350 kg)', now(), now()),
+('금속 원자재 투입량', 20004, 2000, 40111, '주요 금속 원료 투입량 (2,000 kg)', now(), now()),
+
+/* 박지현(20005) */
+('제품 포장 단위당 무게', 20005, 1, 40111, '1개 제품 포장 단위당 질량 기준 (1 kg)', now(), now()),
+('건축자재 공급량', 20005, 3000, 40111, '연간 자재 공급 기준 (3,000 kg)', now(), now()),
+('폐유 발생량', 20005, 180, 40111, '기계 유지보수 시 발생 폐유 기준 (180 kg)', now(), now()),
+
+/* 정수현(20006) */
+('플라스틱 병 투입량', 20006, 600, 40111, 'PET 병 생산을 위한 투입량 기준 (600 kg)', now(), now()),
+('페인트 사용량', 20006, 400, 40111, '제품 도장 공정에서 사용된 페인트 총량 (400 kg)', now(), now()),
+('제품 스크랩 회수량', 20006, 250, 40111, '불량품 및 스크랩 회수 기준 (250 kg)', now(), now()),
+
+/* 최유진(20007) */
+('고무 부품 생산량', 20007, 1200, 40111, '고무 부품의 연간 생산량 기준 (1,200 kg)', now(), now()),
+('금속 스크랩 배출량', 20007, 900, 40111, '절단/가공 공정에서 발생한 금속 스크랩 (900 kg)', now(), now()),
+('폐포장재 배출량', 20007, 500, 40111, '폐포장재(PE, 종이) 배출량 기준 (500 kg)', now(), now());
