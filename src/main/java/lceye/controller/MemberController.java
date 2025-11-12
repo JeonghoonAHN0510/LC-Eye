@@ -21,10 +21,11 @@ public class MemberController {
     /**
      * [MB-01] 로그인(login)
      * <p>
-     * [아이디, 비밀번호]를 받아서 DB에 일치하는 회원이 존재한다면, Redis에 로그인 정보가 담긴 JWT 토큰을 저장한다.
+     * [아이디, 비밀번호]를 받아서 DB에 일치하는 회원이 존재한다면, Redis와 Cookie에 로그인 정보가 담긴 JWT 토큰을 저장한다.
      * <p>
      * 테스트 : {"mid":"admin", "mpwd":"1234"}
      * @param memberDto 아이디, 비밀번호가 담긴 Dto
+     * @param response 요청한 회원의 HTTP 정보
      * @return 로그인을 성공한 회원의 Dto
      * @author AhnJH
      */
@@ -48,7 +49,33 @@ public class MemberController {
         return ResponseEntity.ok(result);
     } // func end
 
+    /**
+     * [MB-02] 로그아웃(logout)
+     * <p>
+     * 요청한 회원의 로그인 정보를 Redis와 Cookie에서 제거한다.
+     * @param token 요청한 회원의 token 정보
+     * @param response 요청한 회원의 HTTP 정보
+     * @return 로그아웃 성공 여부 - boolean
+     * @author AhnJH
+     */
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(@CookieValue(value = "loginMember", required = false) String token,
+                                    HttpServletResponse response){
+        // 1. 삭제 기능을 할 임시 쿠키 생성
+        Cookie cookie = new Cookie("loginMember", null);
+        // 2. 즉시 삭제 쿠키 설정
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        // 3. 임시 쿠키를 클라이언트에게 반환
+        response.addCookie(cookie);
+        // 4. Redis에 저장된 쿠키 삭제 진행 후 반환
+        return ResponseEntity.ok(memberService.logout(token));
+    } // func end
+
     // 임시 로그인 확인용
+    @Deprecated
     @GetMapping
     public ResponseEntity<?> tempGetMember(HttpServletRequest request){
         Cookie[] cookies = request.getCookies();

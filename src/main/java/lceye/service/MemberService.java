@@ -22,7 +22,7 @@ public class MemberService {
     /**
      * [MB-01] 로그인(login)
      * <p>
-     * [아이디, 비밀번호]를 받아서 DB에 일치하는 회원이 존재한다면, Redis에 로그인 정보가 담긴 JWT 토큰을 저장한다.
+     * [아이디, 비밀번호]를 받아서 DB에 일치하는 회원이 존재한다면, Redis와 Cookie에 로그인 정보가 담긴 JWT 토큰을 저장한다.
      * </p>
      * @param memberDto 아이디, 비밀번호가 담긴 Dto
      * @return 로그인을 성공한 회원의 Dto
@@ -42,5 +42,14 @@ public class MemberService {
         memberTemplate.opsForValue().set(key, token, Duration.ofHours(1));
         // 5. 최종적으로 토큰이 담긴 Dto 반환
         return result;
+    } // func end
+
+    public boolean logout(String token){
+        // 1. 토큰트로부터 요청한 회원번호 추출하기
+        int loginMno = jwtService.getMnoFromClaims(token);
+        // 2. 회원번호를 토대로 토큰 key 생성
+        String key = "member:" + loginMno;
+        // 3. 요청한 로그인정보를 Redis에서 제거
+        return memberTemplate.delete(key);
     } // func end
 } // class end
