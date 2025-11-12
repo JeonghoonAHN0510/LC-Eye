@@ -2,8 +2,6 @@ package lceye.service;
 
 import org.springframework.stereotype.Service;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;

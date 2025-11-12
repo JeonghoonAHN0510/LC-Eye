@@ -3,15 +3,12 @@ package lceye.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lceye.model.dto.MemberDto;
-import lceye.service.JwtService;
 import lceye.service.MemberService;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-    private final JwtService jwtService;
 
     /**
      * [MB-01] 로그인(login)
@@ -45,7 +41,7 @@ public class MemberController {
             cookie.setHttpOnly(true);
             cookie.setSecure(false);        // https에서만 true를 사용할 수 있어서 false로 설정
             cookie.setPath("/");
-            cookie.setMaxAge(3600);     // 토큰 및 Redis의 유효시간이 1시간
+            cookie.setMaxAge(3600);         // 토큰 및 Redis의 유효시간이 1시간
             // 5. 생성한 쿠키를 클라이언트에게 반환
             response.addCookie(cookie);
             result.setToken(null);
@@ -106,26 +102,5 @@ public class MemberController {
         result.put("isAuth", false);
         // 7. HTTP 403으로 반환
         return ResponseEntity.status(403).body(result);
-    } // func end
-
-    // 임시 로그인 확인용
-    @Deprecated
-    @GetMapping
-    public ResponseEntity<?> tempGetMember(HttpServletRequest request){
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null){
-            for (Cookie cookie : cookies){
-                if (cookie.getName().equals("loginMember")){
-                    String token = cookie.getValue();
-                    boolean validateToken = jwtService.validateToken(token);
-                    if (validateToken){
-                        return ResponseEntity.ok("로그인 중입니다." + token);
-                    } else {
-                        return ResponseEntity.ok("유효하지 않은 토큰입니다.");
-                    } // if end
-                } // if end
-            } // for end
-        } // if end
-        return ResponseEntity.ok("비로그인 중입니다.");
     } // func end
 } // class end
