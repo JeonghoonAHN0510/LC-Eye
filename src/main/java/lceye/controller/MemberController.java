@@ -46,6 +46,7 @@ public class MemberController {
             response.addCookie(cookie);
         } // if end
         // 6. 최종적으로 결과 반환
+        result.setToken(null);
         return ResponseEntity.ok(result);
     } // func end
 
@@ -73,6 +74,10 @@ public class MemberController {
         // 4. Redis에 저장된 쿠키 삭제 진행 후 반환
         return ResponseEntity.ok(memberService.logout(token));
     } // func end
+
+//    public ResponseEntity<?> getInfo(@CookieValue(value = "loginMember", required = false) String token){
+//        // 1.
+//    } // func end
 
     // 임시 로그인 확인용
     @Deprecated

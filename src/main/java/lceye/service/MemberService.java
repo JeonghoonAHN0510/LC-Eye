@@ -8,6 +8,7 @@ import java.time.Duration;
 import jakarta.transaction.Transactional;
 import lceye.model.dto.MemberDto;
 import lceye.model.entity.MemberEntity;
+import lceye.model.mapper.MemberMapper;
 import lceye.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final MemberMapper memberMapper;
     private final JwtService jwtService;
     private final RedisTemplate<String, Object> memberTemplate;
 
@@ -30,20 +32,27 @@ public class MemberService {
      */
     public MemberDto login(MemberDto memberDto){
         // 1. 요청된 아이디와 비밀번호가 유효한지 확인
-        MemberEntity memberEntity = memberRepository.findByMidAndMpwd(memberDto.getMid(), memberDto.getMpwd());
+        MemberDto result = memberMapper.login(memberDto);
         // 2. 유효하지 않으면, null 반환
-        if (memberEntity == null) return null;
-        // 3. 유효하면, 로그인정보로 토큰 발급 : loginMno, loginCno, loginRole
-        String token = jwtService.generateToken(memberEntity.toDto());
-        MemberDto result = memberEntity.toDto();
+        if (result == null) return null;
+        // 3. 유효하면, 로그인정보로 토큰 발급 : loginMno, loginCname, loginRole
+        String token = jwtService.generateToken(result);
         result.setToken(token);
         // 4. 발급받은 토큰을 Redis에 저장 : 토큰의 유효시간이 1시간이기에 Redis에도 1시간 적용
-        String key = "member:" + memberEntity.getMno();     // member:10001
+        String key = "member:" + result.getMno();     // member:10001
         memberTemplate.opsForValue().set(key, token, Duration.ofHours(1));
         // 5. 최종적으로 토큰이 담긴 Dto 반환
         return result;
     } // func end
 
+    /**
+     * [MB-02] 로그아웃(logout)
+     * <p>
+     * 요청한 회원의 로그인 정보를 Redis와 Cookie에서 제거한다.
+     * @param token 요청한 회원의 token 정보
+     * @return Redis 제거 성공 여부 - boolean
+     * @author AhnJH
+     */
     public boolean logout(String token){
         // 1. 토큰트로부터 요청한 회원번호 추출하기
         int loginMno = jwtService.getMnoFromClaims(token);

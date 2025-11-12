@@ -22,8 +22,8 @@ public class JwtService {
     private final Key secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
     /**
-     * 로그인한 회원의 mno, cno, mrole을 바탕으로 토큰을 생성해주는 메소드
-     * @param memberDto mno, cno, mrole이 들어있는 Dto
+     * 로그인한 회원의 mno, cname, mrole을 바탕으로 토큰을 생성해주는 메소드
+     * @param memberDto mno, cname, mrole이 들어있는 Dto
      * @return 생성된 토큰
      * @author AhnJH
      */
@@ -33,7 +33,7 @@ public class JwtService {
                 // 2. loginMno에 mno 저장
                 .claim("loginMno", memberDto.getMno())
                 // 3. loginCno에 cno 저장
-                .claim("loginCno", memberDto.getCno())
+                .claim("loginCname", memberDto.getCname())
                 // 4. loginRole에 mrole 저장
                 .claim("loginRole", memberDto.getMrole())
                 // 5. 토큰 발급시간에 현재 시간 저장
@@ -91,5 +91,8 @@ public class JwtService {
     } // func end
     public String getRoleFromClaims(String token){
         return getClaimsFromToken(token).get("loginRole", String.class);
+    } // func end
+    public String getCnameFromClaims(String token){
+        return getClaimsFromToken(token).get("loginCname", String.class);
     } // func end
 } // class end
