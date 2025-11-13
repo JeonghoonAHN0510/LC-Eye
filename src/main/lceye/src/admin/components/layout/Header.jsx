@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate } from "react-router-dom";
 import headerLogo from '../../../assets/img/LC-Eye_HeaderLogo.svg';
+import Button from '@mui/joy/Button';
 
 export default function Header(props) {
     const { isLogin } = useSelector((state) => state.admin);
@@ -14,14 +15,15 @@ export default function Header(props) {
                 <img src={headerLogo} alt="headerLogo" />
             </div>
             <div className='infoBox'>
-                <span>{isLogin.mname}</span>님 <br />
-                소속 : {isLogin.cname} <br />
-
-                권한 : {
+                <span>{isLogin.mname}</span>
+                ({
                     isLogin.role == "ADMIN" ? "시스템 관리자"
                         : isLogin.role == "MANAGER" ? "회사 관리자"
                             : "실무자"
-                }
+                })님 <br />
+                소속 : {isLogin.cname}
+
+                로그아웃
 
             </div>
         </>
