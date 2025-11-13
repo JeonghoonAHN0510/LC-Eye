@@ -23,7 +23,7 @@ public class FileService {
      * @param data json 파일에 저장할 데이터
      * @author 민성호
      */
-    public void writeFile(String type , String name , Map<String,Object> data){
+    public boolean writeFile(String type , String name , Map<String,Object> data){
         String fileName = type + "/" + name + ".json";
         // 파일 경로
         String filePath = path + fileName;
@@ -36,10 +36,11 @@ public class FileService {
             if (parentDir != null && !parentDir.exists()){
                 parentDir.mkdir();
             }// if end
-
             mapper.writeValue(file,data);
+            return true;
         }catch (Exception e){
             e.printStackTrace();
+            return false;
         }// try end
     }// func end
 
