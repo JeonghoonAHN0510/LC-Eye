@@ -50,6 +50,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     // Google 번역 API
     implementation 'com.google.cloud:google-cloud-translate:2.77.0'
+    // DeepL 번역 API
+    implementation "com.deepl.api:deepl-java:1.12.0"
 }
 
 tasks.named('test') {
