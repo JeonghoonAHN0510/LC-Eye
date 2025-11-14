@@ -25,6 +25,7 @@ public class ProjectEntity extends BaseTime{
     private double pjamount;
     @Column(columnDefinition = "longtext")
     private String pjdesc;
+
     @ManyToOne(
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
@@ -36,7 +37,7 @@ public class ProjectEntity extends BaseTime{
             fetch = FetchType.LAZY
     )
     @JoinColumn(name = "uno", columnDefinition = "int unsigned")
-    private UnitsEntity usersEntity;
+    private UnitsEntity unitsEntity;
     // 2. toDto 생성
     public ProjectDto toDto(){
         return ProjectDto.builder()
