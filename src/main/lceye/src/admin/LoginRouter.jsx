@@ -4,7 +4,7 @@ import LoingRightSection from "./pages/login/LoginRightSection";
 export default function LoginRouter(props){
     return(
         <>
-        <div style={{display:"flex", justifyContent:"space-evenly"}}>
+        <div className="loginRouter">
             <LoingLeftSection/>
             <LoingRightSection/>
         </div>

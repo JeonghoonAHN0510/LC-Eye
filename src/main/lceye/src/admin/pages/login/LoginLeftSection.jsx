@@ -4,7 +4,7 @@ export default function LoingLeftSection(props){
     return(
         <>
         <div className='leftSection'>
-            <div>
+            <div className='loginLogoBox'>
                 <img src={logo} alt="메인 로고" />
             </div>
             <div>
