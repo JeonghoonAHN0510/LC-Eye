@@ -85,14 +85,19 @@ public class MemberService {
         // 2. 회원번호로 회원명 추출하기
         Optional<MemberEntity> memberEntity = memberRepository.findById(mno);
         String mname = null;
+        int cno = 0;
         if (memberEntity.isPresent()){
             mname = memberEntity.get().getMname();
+            if (memberEntity.get().getCompanyEntity() != null){
+                cno = memberEntity.get().getCompanyEntity().getCno();
+            } // if end
         } // if end
         // 3. 추출한 정보를 Map 형식으로 변환하기
         Map<String, Object> infoByToken = new HashMap<>();
         infoByToken.put("mname", mname);
         infoByToken.put("role", role);
         infoByToken.put("cname", cname);
+        infoByToken.put("cno", cno);
         // 4. 변환한 Map 반환하기
         return infoByToken;
     } // func end
