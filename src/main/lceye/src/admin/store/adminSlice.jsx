@@ -4,8 +4,10 @@ const initialState = {
     isLogin:{
         isAuth: null,
         role: null,
+        mno: null,
+        mname: null,
+        cno: null,
         cname: null,
-        mname: null
     }
 };
 

@@ -1,7 +1,7 @@
 export default function LoingRightSection(props){
     return(
         <>
-        <div>
+        <div className="rightSection">
             <div>
                 프로젝트 로고
             </div>

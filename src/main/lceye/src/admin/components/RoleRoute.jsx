@@ -3,6 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import axios from 'axios';
 import { useEffect } from "react";
 import { checkingLogin } from "../store/adminSlice";
+import '../../assets/css/login.css';
 
 const axiosOption = {withCredentials: true};
 

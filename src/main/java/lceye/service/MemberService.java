@@ -57,7 +57,7 @@ public class MemberService {
      * @author AhnJH
      */
     public boolean logout(String token){
-        // 0. 토큰이 유효한지 확인   // todo 추후 AOP
+        // 0. 토큰이 유효한지 확인
         if (!jwtService.validateToken(token)) return false;
         // 1. 토큰으로부터 요청한 회원번호 추출하기
         int loginMno = jwtService.getMnoFromClaims(token);
@@ -76,13 +76,21 @@ public class MemberService {
      * @author AhnJH
      */
     public Map<String, Object> getInfo(String token){
-        // 0. 토큰이 유효한지 확인   // todo 추후 AOP
+        // 0. 토큰이 유효한지 확인
         if (!jwtService.validateToken(token)) return null;
-        // 1. 토큰으로부터 요청한 회원번호, 권한, 회사명 추출하기
+        // 1. 토큰으로부터 요청한 회원번호 추출하기 : Redis 검증을 위하여 먼저 추출
         int mno = jwtService.getMnoFromClaims(token);
+        // 2. Redis Key 생성
+        String key = "member:" + mno;
+        // 3. Key로 Redis에서 토큰 조회
+        String redisToken = (String) memberTemplate.opsForValue().get(key);
+        // 4. redisToken 상태 검증
+        // redisToken이랑 token이 같아야함!! 같은 토큰을 저장했기에
+        if (redisToken == null || !redisToken.equals(token)) return null;
+        // 5. 토큰으로부터 권한과 회사명 추출하기
         String role = jwtService.getRoleFromClaims(token);
         String cname = jwtService.getCnameFromClaims(token);
-        // 2. 회원번호로 회원명 추출하기
+        // 6. 회원번호로 회원명, 회사번호 추출하기
         Optional<MemberEntity> memberEntity = memberRepository.findById(mno);
         String mname = null;
         int cno = 0;
@@ -92,13 +100,14 @@ public class MemberService {
                 cno = memberEntity.get().getCompanyEntity().getCno();
             } // if end
         } // if end
-        // 3. 추출한 정보를 Map 형식으로 변환하기
+        // 7. 추출한 정보를 Map 형식으로 변환하기
         Map<String, Object> infoByToken = new HashMap<>();
+        infoByToken.put("mno", mno);
         infoByToken.put("mname", mname);
         infoByToken.put("role", role);
         infoByToken.put("cname", cname);
         infoByToken.put("cno", cno);
-        // 4. 변환한 Map 반환하기
+        // 8. 변환한 Map 반환하기
         return infoByToken;
     } // func end
 } // class end
