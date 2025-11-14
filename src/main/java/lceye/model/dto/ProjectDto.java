@@ -16,6 +16,7 @@ public class ProjectDto {
     private String pjname;
     private double pjamount;
     private String pjdesc;
+    private String pjfilename;
     private int mno;
     private int uno;
     private String createdate;
@@ -31,6 +32,7 @@ public class ProjectDto {
                 .pjname(this.pjname)
                 .pjamount(this.pjamount)
                 .pjdesc(this.pjdesc)
+                .pjfilename(this.pjfilename)
                 .build();
     } // func end
 } // class end

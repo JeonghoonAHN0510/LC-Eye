@@ -27,6 +27,8 @@ public class ProcessInfoEntity extends BaseTime{
     private String pcdesc;
     @Column(columnDefinition = "varchar(100)")
     private String pcsource;
+    @Column(columnDefinition = "char(41)")
+    private String pcfilename;
 
     // 2. toDto 생성
     public ProcessInfoDto toDto(){
@@ -36,6 +38,7 @@ public class ProcessInfoEntity extends BaseTime{
                 .pcname(this.pcname)
                 .pcdesc(this.pcdesc)
                 .pcsource(this.pcsource)
+                .pcfilename(this.pcfilename)
                 .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
                 .build();

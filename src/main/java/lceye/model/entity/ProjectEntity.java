@@ -25,6 +25,8 @@ public class ProjectEntity extends BaseTime{
     private double pjamount;
     @Column(columnDefinition = "longtext")
     private String pjdesc;
+    @Column(columnDefinition = "char(40)")
+    private String pjfilename;
     @ManyToOne(
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
@@ -44,6 +46,7 @@ public class ProjectEntity extends BaseTime{
                 .pjname(this.pjname)
                 .pjamount(this.pjamount)
                 .pjdesc(this.pjdesc)
+                .pjfilename(this.pjfilename)
                 .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
                 .build();
