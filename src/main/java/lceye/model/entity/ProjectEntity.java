@@ -38,7 +38,7 @@ public class ProjectEntity extends BaseTime{
             fetch = FetchType.LAZY
     )
     @JoinColumn(name = "uno", columnDefinition = "int unsigned")
-    private UnitsEntity usersEntity;
+    private UnitsEntity unitsEntity;
     // 2. toDto 생성
     public ProjectDto toDto(){
         return ProjectDto.builder()
