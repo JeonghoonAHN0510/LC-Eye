@@ -4,21 +4,11 @@
     border-bottom: 3px solid #2F3E77;
     width: 1440px;
     height: 5rem;
-    position: fixed;
-    top: 0;
-    /* width: 100% */
-    left: 0;
-    right: 0;
 }
 
 .header img {
     width: 13.5rem;
     height: 4rem;
-}
-
-.projectSection {
-    display: flex;
-    justify-content: space-evenly;
 }
 
 .imgBox {
