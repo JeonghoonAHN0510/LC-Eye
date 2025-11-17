@@ -110,13 +110,16 @@ public class FileService {
      * @author 민성호
      */
     public boolean deleteFile(String name , String type){
+        System.out.println("FileService.deleteFile");
         String fileName = type + "/" + name + ".json";
         String filePath = path + fileName;
         try{
             File file = new File(filePath);
-
+            System.out.println("file = " + file);
             if (file.exists()){
+                System.out.println("파일존재 :"+file.exists());
                 if (file.delete()){
+                    System.out.println("파일삭제 : " + file.delete());
                     return true;
                 }else {
                     return false;

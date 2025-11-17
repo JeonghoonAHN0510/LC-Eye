@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<ProjectEntity, Integer> {
 
-    @Query("select * from project where mno = :mno")
+    @Query(value = "select * from project where mno = :mno",nativeQuery = true)
     List<ProjectEntity> findByMno(int mno);
 }

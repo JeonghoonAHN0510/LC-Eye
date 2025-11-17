@@ -20,11 +20,11 @@ public class ExchangeController {
     private final TranslationService translationService;
     private final ExchangeService exchangeService;
 
-    @PostMapping("/auto") // localhost:8080/api/inout/auto
-    public ResponseEntity<?> test(){
-        String text = "경유";
-        return ResponseEntity.ok(translationService.Translate(text));
-    }// func end
+    //@PostMapping("/auto") // localhost:8080/api/inout/auto
+    //public ResponseEntity<?> test(){
+    //    String text = "경유";
+    //    return ResponseEntity.ok(translationService.Translate(text));
+    //}// func end
 
     /**
      * 투입물·산출물 저장/수정

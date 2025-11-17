@@ -32,16 +32,21 @@ public class ExchangeService {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         // 파일 이름 형식 , cno_pjno_type_datetime(20251113_1600)
-        String name = cno + "_" + exchangeList.get("pjno") + "_exchange_";
+        String projectNumber = String.valueOf(exchangeList.get("pjno"));
+        String name = cno + "_" + projectNumber + "_exchange_";
         String fileName;
-        if (exchangeList.get("createdate") != null ){ // createdate 키의 값이 null이 아니면
+        String createdate = String.valueOf(exchangeList.get("createdate"));
+        if (createdate != null && !createdate.equalsIgnoreCase("null") ){ // createdate 키의 값이 null이 아니면
             // createdate 키의 값을 파일명 형식에 맞게 형식 변환
-            String createdate = (String) exchangeList.get("createdate");
             DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime dateTime = LocalDateTime.parse(createdate,change);
+            exchangeList.put("updatedate",now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             fileName = name + dateTime.format(formatter);
+            System.out.println("dateTime = " + dateTime);
         }else { // 비어있으면 파일명 형식에 맞게 현재 날짜시간을 변환
+            exchangeList.put("createdate",now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             fileName = name + now.format(formatter);
+            System.out.println("fileName = " + fileName);
         }// if end
         return fileService.writeFile("exchange",fileName,exchangeList);
     }// func end
@@ -121,13 +126,15 @@ public class ExchangeService {
         if (!jwtService.validateToken(token)) return false;
         int cno = jwtService.getCnoFromClaims(token);
         ProjectDto dto = projectService.testPjnoGet(pjno);
+        System.out.println("dto = " + dto);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         if (dto != null){
             String projectNumber = String.valueOf(pjno);
             String name = cno + "_" + projectNumber + "_exchange_";
-            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             LocalDateTime dateTime = LocalDateTime.parse(dto.getCreatedate(),change);
             String fileName = name + dateTime.format(formatter);
+            System.out.println(fileService.deleteFile(fileName,"exchange"));
             return fileService.deleteFile(fileName,"exchange");
         }// if end
         return false;
