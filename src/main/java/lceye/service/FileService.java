@@ -101,4 +101,33 @@ public class FileService {
         return list;
     }// func end
 
+    /**
+     * json 파일 삭제
+     *
+     * @param name 파일 이름
+     * @param type 파일저장된 폴더명
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean deleteFile(String name , String type){
+        String fileName = type + "/" + name + ".json";
+        String filePath = path + fileName;
+        try{
+            File file = new File(filePath);
+
+            if (file.exists()){
+                if (file.delete()){
+                    return true;
+                }else {
+                    return false;
+                }// if end
+            }else {
+                return true; // 삭제할 파일이 존재하지않으면 원하는 상태이므로 true
+            }// if end
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }// try end
+    }// func end
+
 }// class end

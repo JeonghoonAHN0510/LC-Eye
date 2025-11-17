@@ -109,4 +109,28 @@ public class ExchangeService {
         return requestMap;
     }// func end
 
+    /**
+     * json 파일 삭제
+     *
+     * @param token 로그인한 회원의 토큰
+     * @param pjno 삭제하는 프로젝트 번호
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean clearIOInfo(String token , int pjno){
+        if (!jwtService.validateToken(token)) return false;
+        int cno = jwtService.getCnoFromClaims(token);
+        ProjectDto dto = projectService.testPjnoGet(pjno);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
+        if (dto != null){
+            String projectNumber = String.valueOf(pjno);
+            String name = cno + "_" + projectNumber + "_exchange_";
+            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime dateTime = LocalDateTime.parse(dto.getCreatedate(),change);
+            String fileName = name + dateTime.format(formatter);
+            return fileService.deleteFile(fileName,"exchange");
+        }// if end
+        return false;
+    }// func end
+
 }// class end

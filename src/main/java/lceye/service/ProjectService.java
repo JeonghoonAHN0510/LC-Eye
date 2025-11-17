@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -49,6 +50,15 @@ public class ProjectService {
         List<ProjectEntity> entities = projectRepository.findByMno(mno);
         List<ProjectDto> dtoList = entities.stream().map(ProjectEntity::toDto).toList();
         return dtoList;
+    }// func end
+
+    public ProjectDto testPjnoGet(int pjno){
+        Optional<ProjectEntity> optional = projectRepository.findById(pjno);
+        if (optional.isPresent()){
+            ProjectEntity entity = optional.get();
+            return entity.toDto();
+        }// if end
+        return null;
     }// func end
 
 
