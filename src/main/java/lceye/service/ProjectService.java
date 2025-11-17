@@ -50,23 +50,60 @@ public class ProjectService {
      * [PJ-02] 프로젝트 전체조회
      */
     public List<ProjectDto> readAllProject(String token){
-        // [1.1] Token이 없으면 null로 반환
+        // [2.1] Token이 없으면 null로 반환
         if(!jwtService.validateToken(token)) return null;
-        // [1.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        // [2.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
         int mno = jwtService.getMnoFromClaims(token);
-        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
         String mrole = jwtService.getRoleFromClaims(token);
-        // [1.3] mrole(역할)에 따른 서로 다른 조회 구현
-        // [1.3.1] mrole = admin or manager : cno 기반 프로젝트 전체 조회
+        // [2.3] mno로 MemberRepository 조회
+        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        // [2.4] mrole(역할)에 따른 서로 다른 조회 구현
+        // [2.4.1] mrole = admin or manager : cno 기반 프로젝트 전체 조회
         if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
             return projectRepository.searchCno(memberEntity.getCompanyEntity().getCno()).stream().map(ProjectEntity :: toDto).toList();
         }
-        // [1.3.2] mrole = worker : mno 기반 본인이 작성한 프로젝트만 조회
+        // [2.4.2] mrole = worker : mno 기반 본인이 작성한 프로젝트만 조회
         if(mrole.equals("WORKER")){
             return projectRepository.findByMemberEntity(memberEntity).stream().map(ProjectEntity :: toDto).toList();
         }
         return null;
     } // func end
 
+    /**
+     * [PJ-03] 프로젝트 개별 조회
+     * <p>
+     * 권한을 확인하여 worker면, 본인의 프로젝트만 상세 조회 가능
+     * 권한이 admin, manager 이면, 본인 프로젝트가 아닌 회사 프로젝트도 조회 가능
+     */
+    public ProjectDto readProject(String token, int pjNo){
+        // [3.1] Token, pjNo가 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        if(pjNo == 0) return null;
+        // [3.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        String mrole = jwtService.getRoleFromClaims(token);
+        // [3.3] mno로 MemberRepository 조회
+        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        // [3.4] mrole(역할)에 따른 서로 다른 조회 구현
+        // [3.5] mrole = admin or manager
+        if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
+            // [3.5.1] project Entity 조회
+             ProjectEntity result = projectRepository.getById(pjNo);
+            // [3.5.2] 작성자의 cno 와 로그인한 계정의 cno가 일치하지 않으면 null
+            if( result.getMemberEntity().getCompanyEntity().getCno() != memberEntity.getCompanyEntity().getCno()) return null;
+            // [3.5.3] 일치하므로 결과 반환
+            return result.toDto();
+        }
+        // [3.6] mrole = worker
+        if(mrole.equals("WORKER")){
+            // [3.6.1] 프로젝트 Entity 조회
+            ProjectDto result = projectRepository.getById(pjNo).toDto();
+            // [3.6.2] 조회 결과의 mno와 로그인 계정의 mno가 일치하지 않으므로 null
+            if(result.getMno() != mno) return null; //
+            // [3.6.3] 조회 결과의 mno와 로그인 계정의 mno가 일치하므로 결과 반환
+            return result;
+        }
+        return null;
+    } // func end
 
 } // class end

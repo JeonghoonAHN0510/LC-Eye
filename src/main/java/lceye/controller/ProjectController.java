@@ -60,16 +60,17 @@ public class ProjectController {
     public ResponseEntity<?> readAllProject(@CookieValue(value = "loginMember", required = false) String token){
         System.out.println("ProjectController.readAllProject");
         System.out.println("token = " + token);
-
         return ResponseEntity.ok(projectService.readAllProject(token));
     } // func end
 
     /**
-     * [PJ-04]
+     * [PJ-03] 프로젝트 개별조회
+     * @author OngTK
      */
-    public ResponseEntity<?> readProject(){
-        // todo OngTK 기능 구현
-        return ResponseEntity.ok(true);
+    @GetMapping
+    public ResponseEntity<?> readProject(@CookieValue(value = "loginMember", required = false) String token,
+                                         @RequestParam int pjno){
+        return ResponseEntity.ok(projectService.readProject(token, pjno));
     } // func end
 
     /**
