@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -65,6 +68,37 @@ public class FileService {
             e.printStackTrace();
         }// try end
         return map;
+    }// func end
+
+    /**
+     * 파일 검색기능
+     *
+     * @param name 찾는파일명의 포함되는 문자열
+     * @return List<Map<String,Object>>
+     * @author 민성호
+     */
+    public List<Map<String,Object>> filterFile(String name ){
+        File filterDir = new File(path);
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String,Object>> list = new ArrayList();
+        File[] fileNameList = filterDir.listFiles(new FilenameFilter(){
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".json");
+            }
+        });
+        System.out.println("fileNameList = " + fileNameList);
+        try {
+            if (fileNameList != null) {
+                for (File file : fileNameList) {
+                    Map<String, Object> map = mapper.readValue(file, Map.class);
+                    list.add(map);
+                }// for end
+            }// if end
+        } catch (Exception e) {
+            e.printStackTrace();
+        }// try end
+        return list;
     }// func end
 
 }// class end

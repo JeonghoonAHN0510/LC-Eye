@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -42,6 +44,12 @@ public class ProjectService {
         // [1.5] 결과 반환
         return projectEntity.toDto();
     } // func end
+
+    public List<ProjectDto> testGet(int mno ){
+        List<ProjectEntity> entities = projectRepository.findByMno(mno);
+        List<ProjectDto> dtoList = entities.stream().map(ProjectEntity::toDto).toList();
+        return dtoList;
+    }// func end
 
 
 

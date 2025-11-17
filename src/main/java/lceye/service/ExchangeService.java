@@ -1,11 +1,13 @@
 package lceye.service;
 
+import lceye.model.dto.ProjectDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class ExchangeService {
 
     private final FileService fileService;
     private final JwtService jwtService;
+    private final ProjectService projectService;
 
     /**
      * 투입물·산출물 저장/수정
@@ -43,13 +46,67 @@ public class ExchangeService {
         return fileService.writeFile("exchange",fileName,exchangeList);
     }// func end
 
-    //public Map<String,Object> autoMatch(List<String> clientInput , int mno , int cno){
-    //    String projectNumber; // 프로젝트 번호
-    //    String companyNumber = ""+cno;
-    //    List<Map<String,Object>> list = fileService.filterFile(companyNumber);
-    //    for (Map<String , Object> map : list){
-    //        map.get("exchanges");
-    //    }
-    //}// func end
+    /**
+     * 로그인한 회원의 회사파일에서 일치하는 데이터 찾기
+     *
+     * @param clientInput 클라이언트가 입력한 투입물·산출물
+     * @param token 로그인한 회원의 토큰
+     * @return Map<String,Object>
+     * @author 민성호
+     */
+    public Map<String,Object> autoMatchCno(List<String> clientInput , String token){
+        if (!jwtService.validateToken(token)) return null;
+        int cno = jwtService.getCnoFromClaims(token);
+        Map<String,Object> requestMap = new HashMap<>();
+        String companyNumber = ""+cno;
+        List<Map<String,Object>> list = fileService.filterFile(companyNumber);
+        for (Map<String , Object> map : list){
+            Object obj = map.get("exchanges");
+            if (obj instanceof List){
+                List<Map<String,Object>> mapList = (List<Map<String,Object>>) obj;
+                for (Map<String,Object> exchange : mapList){
+                    for (String input : clientInput){
+                        if (exchange.get("pjename").equals(input)){
+                            requestMap.put(input,exchange.get("pname"));
+                        }// if end
+                    }// for end
+                }// for end
+            }// if end
+        }// for end
+        return requestMap;
+    }// func end
+
+    /**
+     * 로그인한 회원의 작성파일에서 일치하는 데이터 찾기
+     *
+     * @param clientInput 클라이언트가 입력한 투입물·산출물
+     * @param token 로그인한 회원의 토큰
+     * @return Map<String,Object>
+     * @author 민성호
+     */
+    public Map<String,Object> autoMatchPjno(List<String> clientInput , String token){
+        if (!jwtService.validateToken(token)) return null;
+        int mno = jwtService.getMnoFromClaims(token);
+        List<ProjectDto> projectDtos = projectService.testGet(mno);
+        Map<String,Object> requestMap = new HashMap<>();
+        List<Integer> pjnoList = projectDtos.stream().map(ProjectDto::getPjno).toList();
+        for (int pjno : pjnoList){
+            List<Map<String,Object>> list = fileService.filterFile(pjno+"");
+            for (Map<String,Object> map : list){
+                Object obj = map.get("exchanges");
+                if (obj instanceof List){
+                    List<Map<String,Object>> mapList = (List<Map<String, Object>>) obj;
+                    for (Map<String,Object> exchange : mapList){
+                        for (String input : clientInput){
+                            if (exchange.get("pjename").equals(input)){
+                                requestMap.put(input,exchange.get("pname"));
+                            }// if end
+                        }// for end
+                    }// for end
+                }// if end
+            }// for end
+        }// for end
+        return requestMap;
+    }// func end
 
 }// class end

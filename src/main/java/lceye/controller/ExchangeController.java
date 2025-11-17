@@ -25,6 +25,13 @@ public class ExchangeController {
         return ResponseEntity.ok(translationService.Translate(text));
     }// func end
 
+    /**
+     * 투입물·산출물 저장/수정
+     *
+     * @param token 로그인 토큰
+     * @param map 투입물·산출물 정보
+     * @return boolean
+     */
     @PostMapping
     public ResponseEntity<?> saveIOInfo(@CookieValue(value = "loginMember", required = false) String token,
                                         @RequestBody Map<String,Object> map){
