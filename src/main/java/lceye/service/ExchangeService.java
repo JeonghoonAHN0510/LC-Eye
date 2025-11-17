@@ -35,6 +35,7 @@ public class ExchangeService {
         String projectNumber = String.valueOf(exchangeList.get("pjno"));
         String name = cno + "_" + projectNumber + "_exchange_";
         String fileName;
+        int pjNumber = (int) exchangeList.get("pjno");
         String createdate = String.valueOf(exchangeList.get("createdate"));
         if (createdate != null && !createdate.equalsIgnoreCase("null") ){ // createdate 키의 값이 null이 아니면
             // createdate 키의 값을 파일명 형식에 맞게 형식 변환
@@ -48,7 +49,12 @@ public class ExchangeService {
             fileName = name + now.format(formatter);
             System.out.println("fileName = " + fileName);
         }// if end
-        return fileService.writeFile("exchange",fileName,exchangeList);
+        boolean result = fileService.writeFile("exchange",fileName,exchangeList);
+        if (result){
+            boolean results = projectService.updatePjfilename(fileName,pjNumber);
+            if (results) return true;
+        }// if end
+        return false;
     }// func end
 
     /**
@@ -92,7 +98,7 @@ public class ExchangeService {
     public Map<String,Object> autoMatchPjno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int mno = jwtService.getMnoFromClaims(token);
-        List<ProjectDto> projectDtos = projectService.testGet(mno);
+        List<ProjectDto> projectDtos = projectService.findByMno(mno);
         Map<String,Object> requestMap = new HashMap<>();
         List<Integer> pjnoList = projectDtos.stream().map(ProjectDto::getPjno).toList();
         for (int pjno : pjnoList){
@@ -125,7 +131,7 @@ public class ExchangeService {
     public boolean clearIOInfo(String token , int pjno){
         if (!jwtService.validateToken(token)) return false;
         int cno = jwtService.getCnoFromClaims(token);
-        ProjectDto dto = projectService.testPjnoGet(pjno);
+        ProjectDto dto = projectService.findByPjno(pjno);
         System.out.println("dto = " + dto);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         if (dto != null){

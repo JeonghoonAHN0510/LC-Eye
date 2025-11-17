@@ -46,19 +46,51 @@ public class ProjectService {
         return projectEntity.toDto();
     } // func end
 
-    public List<ProjectDto> testGet(int mno ){
+    /**
+     * 회원번호로 프로젝트 조회
+     *
+     * @param mno 회원번호
+     * @return List<ProjectDto>
+     * @author 민성호
+     */
+    public List<ProjectDto> findByMno(int mno ){
         List<ProjectEntity> entities = projectRepository.findByMno(mno);
         List<ProjectDto> dtoList = entities.stream().map(ProjectEntity::toDto).toList();
         return dtoList;
     }// func end
 
-    public ProjectDto testPjnoGet(int pjno){
+    /**
+     * 프로젝트 번호로 조회
+     *
+     * @param pjno 프로젝트 번호
+     * @return ProjectDto
+     * @author 민성호
+     */
+    public ProjectDto findByPjno(int pjno){
         Optional<ProjectEntity> optional = projectRepository.findById(pjno);
         if (optional.isPresent()){
             ProjectEntity entity = optional.get();
             return entity.toDto();
         }// if end
         return null;
+    }// func end
+
+    /**
+     * 프로젝트파일명 추가
+     *
+     * @param fileName 프로젝트파일명
+     * @param pjno 프로젝트 번호
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean updatePjfilename(String fileName , int pjno){
+        Optional<ProjectEntity> optional = projectRepository.findById(pjno);
+        if (optional.isPresent()){
+            ProjectEntity entity = optional.get();
+            entity.setPjfilename(fileName);
+            return true;
+        }// if end
+        return false;
     }// func end
 
 
