@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -65,6 +68,69 @@ public class FileService {
             e.printStackTrace();
         }// try end
         return map;
+    }// func end
+
+    /**
+     * 파일 검색기능
+     *
+     * @param name 찾는파일명의 포함되는 문자열
+     * @return List<Map<String,Object>>
+     * @author 민성호
+     */
+    public List<Map<String,Object>> filterFile(String name ){
+        File filterDir = new File(path);
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String,Object>> list = new ArrayList();
+        File[] fileNameList = filterDir.listFiles(new FilenameFilter(){
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".json");
+            }
+        });
+        System.out.println("fileNameList = " + fileNameList);
+        try {
+            if (fileNameList != null) {
+                for (File file : fileNameList) {
+                    Map<String, Object> map = mapper.readValue(file, Map.class);
+                    list.add(map);
+                }// for end
+            }// if end
+        } catch (Exception e) {
+            e.printStackTrace();
+        }// try end
+        return list;
+    }// func end
+
+    /**
+     * json 파일 삭제
+     *
+     * @param name 파일 이름
+     * @param type 파일저장된 폴더명
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean deleteFile(String name , String type){
+        System.out.println("FileService.deleteFile");
+        String fileName = type + "/" + name + ".json";
+        String filePath = path + fileName;
+        try{
+            File file = new File(filePath);
+            System.out.println("file = " + file);
+            if (file.exists()){
+                System.out.println("파일존재 :"+file.exists());
+                if (file.delete()){
+                    System.out.println("파일삭제 : " + file.delete());
+                    return true;
+                }else {
+                    return false;
+                }// if end
+            }else {
+                return true; // 삭제할 파일이 존재하지않으면 원하는 상태이므로 true
+            }// if end
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }// try end
     }// func end
 
 }// class end

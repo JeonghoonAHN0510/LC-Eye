@@ -6,18 +6,24 @@ import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.TranslationServiceClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service @Transactional
 public class TranslationService {
+
+    @Value("${service.deepl.api-key}")
+    private String deeplApiKey;
 
     /**
      * Google Translation API PROJECT ID
      *
      * @author 민성호
      */
-    private static final String Project_id = "tidy-landing-478007-q3";
+    //private static final String Project_id = "tidy-landing-478007-q3";
 
     /**
      * Google API 호출하여 클라이언트가 입력한 문자열을
@@ -61,9 +67,16 @@ public class TranslationService {
     //    }// try end
     //}// func end
 
+    /**
+     * DeepL API 호출하여 클라이언트가 입력한 문자열을
+     * 영어로 번역 요청 로직
+     *
+     * @param text 번역요청 문자열
+     * @return String 번역된 문자열
+     * @author 민성호
+     */
     public String Translate(String text){
-        String apiKey = "1e0809ea-c361-4e73-8c1b-488fb05e57bc:fx";
-        DeepLClient client = new DeepLClient(apiKey);
+        DeepLClient client = new DeepLClient(deeplApiKey);
         try{
             TextResult result = client.translateText(text,"ko","en-US");
             return result.getText();
@@ -71,6 +84,18 @@ public class TranslationService {
             e.printStackTrace();
             return "API 호출 중 오류 발생: " + e.getMessage();
         }// try end
+    }// func end
+
+    /**
+     * 클라이언트가 입력한 투입물·산출물 번역해서 반환
+     *
+     * @param clientInput 클라이언트가 입력한 투입물·산출물
+     * @return List<String>
+     * @author 민성호
+     */
+    public List<String> TransInput(List<String> clientInput){
+        List<String> transInput = clientInput.stream().map(this::Translate).toList();
+        return transInput;
     }// func end
 
 } // class end
