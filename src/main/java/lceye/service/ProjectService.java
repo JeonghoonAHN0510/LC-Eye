@@ -54,13 +54,12 @@ public class ProjectService {
         if(!jwtService.validateToken(token)) return null;
         // [1.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
         int mno = jwtService.getMnoFromClaims(token);
-        int cno = jwtService.getCnoFromClaims(token);
-
         MemberEntity memberEntity = memberRepository.getReferenceById(mno);
         String mrole = jwtService.getRoleFromClaims(token);
         // [1.3] mrole(역할)에 따른 서로 다른 조회 구현
         // [1.3.1] mrole = admin or manager : cno 기반 프로젝트 전체 조회
-        if(mrole.equals("WORKER") || mrole.equals("MANAGER")){
+        if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
+            return projectRepository.searchCno(memberEntity.getCompanyEntity().getCno()).stream().map(ProjectEntity :: toDto).toList();
         }
         // [1.3.2] mrole = worker : mno 기반 본인이 작성한 프로젝트만 조회
         if(mrole.equals("WORKER")){
