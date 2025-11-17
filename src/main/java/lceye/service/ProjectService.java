@@ -110,6 +110,92 @@ public class ProjectService {
         return false;
     }// func end
 
+    /**
+     * [PJ-02] 프로젝트 전체조회
+     */
+    public List<ProjectDto> readAllProject(String token){
+        // [2.1] Token이 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        // [2.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        String mrole = jwtService.getRoleFromClaims(token);
+        // [2.3] mno로 MemberRepository 조회
+        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        // [2.4] mrole(역할)에 따른 서로 다른 조회 구현
+        // [2.4.1] mrole = admin or manager : cno 기반 프로젝트 전체 조회
+        if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
+            return projectRepository.searchCno(memberEntity.getCompanyEntity().getCno()).stream().map(ProjectEntity :: toDto).toList();
+        }
+        // [2.4.2] mrole = worker : mno 기반 본인이 작성한 프로젝트만 조회
+        if(mrole.equals("WORKER")){
+            return projectRepository.findByMemberEntity(memberEntity).stream().map(ProjectEntity :: toDto).toList();
+        }
+        return null;
+    } // func end
 
+    /**
+     * [PJ-03] 프로젝트 개별 조회
+     * <p>
+     * 권한을 확인하여 worker면, 본인의 프로젝트만 상세 조회 가능
+     * 권한이 admin, manager 이면, 본인 프로젝트가 아닌 회사 프로젝트도 조회 가능
+     */
+    public ProjectDto readProject(String token, int pjNo){
+        // [3.1] Token, pjNo가 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        if(pjNo == 0) return null;
+        // [3.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        String mrole = jwtService.getRoleFromClaims(token);
+        // [3.3] mno로 MemberRepository 조회
+        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        // [3.4] mrole(역할)에 따른 서로 다른 조회 구현
+        // [3.5] mrole = admin or manager
+        if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
+            // [3.5.1] project Entity 조회
+             ProjectEntity result = projectRepository.getReferenceById(pjNo);
+            // [3.5.2] 작성자의 cno 와 로그인한 계정의 cno가 일치하지 않으면 null
+            if( result.getMemberEntity().getCompanyEntity().getCno() != memberEntity.getCompanyEntity().getCno()) return null;
+            // [3.5.3] 일치하므로 결과 반환
+            return result.toDto();
+        }
+        // [3.6] mrole = worker
+        if(mrole.equals("WORKER")){
+            // [3.6.1] 프로젝트 Entity 조회
+            ProjectDto result = projectRepository.getReferenceById(pjNo).toDto();
+            // [3.6.2] 조회 결과의 mno와 로그인 계정의 mno가 일치하지 않으므로 null
+            if(result.getMno() != mno) return null; //
+            // [3.6.3] 조회 결과의 mno와 로그인 계정의 mno가 일치하므로 결과 반환
+            return result;
+        }
+        return null;
+    } // func end
+
+    /**
+     * [PJ-04] 프로젝트 수정
+     */
+    public ProjectDto updateProject(String token, ProjectDto projectDto){
+        // [4.1] Token, pjNo가 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        if(projectDto.getPjno() == 0) return null;
+        // [4.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        // [4.3] projectEntity 조회
+        Optional<ProjectEntity> optional = projectRepository.findById(projectDto.getPjno());
+        // [4.4] projectEntity 가 존재하는 지 확인
+        if(optional.isPresent()){
+            // [4.5] projectEntity를 optinal에서 꺼냄
+            ProjectEntity entity = optional.get();
+            // [4.6] projectEntity의 작성자와 지금 요청자가 일치하는 지 확인
+            if(entity.getMemberEntity().getMno() != mno) return null;
+            // [4.7] 일치할 경우, entity setter 진행
+            entity.setPjname(projectDto.getPjname());
+            entity.setPjdesc(projectDto.getPjdesc());
+            entity.setPjamount(projectDto.getPjamount());
+            entity.setUnitsEntity(unitsRepository.findById(projectDto.getUno()).get());
+            // [4.8] 결과 반환
+            return entity.toDto();
+        }
+        return null;
+    }// func end
 
 } // class end
