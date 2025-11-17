@@ -7,9 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service @Transactional @RequiredArgsConstructor
 public class ExchangeService {
@@ -17,6 +15,7 @@ public class ExchangeService {
     private final FileService fileService;
     private final JwtService jwtService;
     private final ProjectService projectService;
+    private final TranslationService translationService;
 
     /**
      * 투입물·산출물 저장/수정
@@ -68,23 +67,36 @@ public class ExchangeService {
     public Map<String,Object> autoMatchCno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int cno = jwtService.getCnoFromClaims(token);
-        Map<String,Object> requestMap = new HashMap<>();
-        String companyNumber = ""+cno;
-        List<Map<String,Object>> list = fileService.filterFile(companyNumber);
-        for (Map<String , Object> map : list){
+        System.out.println("clientInput = " + clientInput + ", token = " + token);
+        // 1. 성능 개선: 클라이언트 입력을 Set으로 변환 (O(1) 검색)
+        Set<String> inputSet = new HashSet<>(clientInput);
+        // 2. 매칭 결과를 저장할 Map. Value를 List로 정의하여 중복 매칭 결과 저장
+        Map<String, List<String>> requestMap = new HashMap<>();
+        String companyNumber = String.valueOf(cno);
+        // 파일 서비스 호출
+        List<Map<String, Object>> list = fileService.filterFile(companyNumber);
+        for (Map<String, Object> map : list) {
             Object obj = map.get("exchanges");
-            if (obj instanceof List){
-                List<Map<String,Object>> mapList = (List<Map<String,Object>>) obj;
-                for (Map<String,Object> exchange : mapList){
-                    for (String input : clientInput){
-                        if (exchange.get("pjename").equals(input)){
-                            requestMap.put(input,exchange.get("pname"));
+            if (obj instanceof List<?> rawList) {
+                for (Object exchangeObj : rawList) {
+                    if (exchangeObj instanceof Map exchange) {
+                        Object pjeNameObj = exchange.get("pjename");
+                        Object pNameObj = exchange.get("pname");
+
+                        // pjeName이 String 타입이고, Set에 포함되는지 확인 (O(1) 검색)
+                        if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
+                            String pName = pNameObj != null ? pNameObj.toString() : "N/A";
+                            // 매칭된 결과를 해당 Key의 리스트에 추가 (덮어쓰기 방지)
+                            requestMap.computeIfAbsent(pjeName, k -> new ArrayList<>()).add(pName);
                         }// if end
-                    }// for end
+                    }// if end
                 }// for end
             }// if end
         }// for end
-        return requestMap;
+
+        // 최종 반환 타입인 Map<String, Object>에 맞게 리턴
+        System.out.println("requestMap: " + requestMap);
+        return new HashMap<>(requestMap);
     }// func end
 
     /**
@@ -98,26 +110,43 @@ public class ExchangeService {
     public Map<String,Object> autoMatchPjno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int mno = jwtService.getMnoFromClaims(token);
+        System.out.println("clientInput = " + clientInput + ", token = " + token);
         List<ProjectDto> projectDtos = projectService.findByMno(mno);
-        Map<String,Object> requestMap = new HashMap<>();
+        // 1. 성능 개선: 클라이언트 입력을 Set으로 변환 (O(1) 검색)
+        Set<String> inputSet = new HashSet<>(clientInput);
+        // 2. 매칭 결과를 저장할 Map. Value를 List로 하여 중복 매칭 시 모든 결과를 저장
+        Map<String, List<String>> requestMap = new HashMap<>();
         List<Integer> pjnoList = projectDtos.stream().map(ProjectDto::getPjno).toList();
-        for (int pjno : pjnoList){
-            List<Map<String,Object>> list = fileService.filterFile(pjno+"");
-            for (Map<String,Object> map : list){
+
+        for (int pjno : pjnoList) {
+            // 파일 서비스는 예외 처리 고려
+            List<Map<String, Object>> list = fileService.filterFile(String.valueOf(pjno));
+            for (Map<String, Object> map : list) {
                 Object obj = map.get("exchanges");
-                if (obj instanceof List){
-                    List<Map<String,Object>> mapList = (List<Map<String, Object>>) obj;
-                    for (Map<String,Object> exchange : mapList){
-                        for (String input : clientInput){
-                            if (exchange.get("pjename").equals(input)){
-                                requestMap.put(input,exchange.get("pname"));
+                // 3. 타입 안전성 확보: 캐스팅 전에 검증
+                if (obj instanceof List<?> rawList) {
+                    for (Object exchangeObj : rawList) {
+                        // 내부 요소가 Map인지 확인
+                        if (exchangeObj instanceof Map exchange) {
+                            Object pjeNameObj = exchange.get("pjename");
+                            Object pNameObj = exchange.get("pname");
+
+                            // pjeName이 문자열이고, clientInput Set에 포함되는지 확인
+                            if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
+                                String pName = pNameObj != null ? pNameObj.toString() : "N/A";
+
+                                // 매칭된 결과를 리스트에 추가 (덮어쓰기 방지)
+                                requestMap.computeIfAbsent(pjeName, k -> new ArrayList<>()).add(pName);
                             }// if end
-                        }// for end
+                        }// if end
                     }// for end
                 }// if end
             }// for end
         }// for end
-        return requestMap;
+
+        // 최종 반환 타입에 맞게 Map<String, Object>로 반환
+        System.out.println("requestMap: " + requestMap);
+        return new HashMap<>(requestMap);
     }// func end
 
     /**
@@ -137,11 +166,11 @@ public class ExchangeService {
         if (dto != null){
             String projectNumber = String.valueOf(pjno);
             String name = cno + "_" + projectNumber + "_exchange_";
-            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime dateTime = LocalDateTime.parse(dto.getCreatedate(),change);
             String fileName = name + dateTime.format(formatter);
-            System.out.println(fileService.deleteFile(fileName,"exchange"));
             boolean result = fileService.deleteFile(fileName,"exchange");
+            System.out.println("result = " + result);
             if (result){
                 boolean results = projectService.deletePjfilename(pjno);
                 if (results) return true;

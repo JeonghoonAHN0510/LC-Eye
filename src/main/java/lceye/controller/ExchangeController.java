@@ -51,6 +51,7 @@ public class ExchangeController {
     @PostMapping("/auto")
     public ResponseEntity<?> matchIO(@CookieValue(value = "loginMember", required = false) String token,
                                      @RequestBody List<String> inputList){
+        System.out.println("token = " + token + ", inputList = " + inputList);
         Map<String,Object> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
         Map<String,Object> cnoMap = exchangeService.autoMatchCno(inputList,token);
         if (pjnoMap != null && !pjnoMap.isEmpty()){
