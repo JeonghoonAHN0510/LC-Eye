@@ -19,6 +19,11 @@ public class ProjectController {
 
     /**
      * [PJ-01] 프로젝트 등록
+     * <p>
+     * "프로젝트명, 기준양, 기준단위(uno), 프로젝트 설명"을 받아 저장한다.
+     * <p>
+     * - 참고: 작성자(mno)를 Redis에서 확인하여 함께 저장
+     * @author OngTK
      */
     @PostMapping
     public ResponseEntity<?> saveProject(@CookieValue(value = "loginMember", required = false) String token,
@@ -42,19 +47,21 @@ public class ProjectController {
     } // func end
 
     /**
-     * [PJ-02]
+     * [PJ-02] 프로젝트 전체조회
+     * <p>
+     * 프로젝트를 전체 조회한다. 단 사이드바 출력용으로 최소한의 자료만 출력한다.
+     * <p>
+     * - 참고 : 권한을 확인하여 Manager, Admin인 경우, 작성자와 상관없이 해당 회사의 모든 프로젝트를 조회한다.
+     * <p>
+     * 권한이 Worker일 경우, 본인이 작성한 프로젝트만 조회한다.
+     * @author OngTK
      */
-    public ResponseEntity<?> readAllProjectForManager(){
-        // todo OngTK 기능 구현
-        return ResponseEntity.ok(true);
-    } // func end
+    @GetMapping("/all")
+    public ResponseEntity<?> readAllProject(@CookieValue(value = "loginMember", required = false) String token){
+        System.out.println("ProjectController.readAllProject");
+        System.out.println("token = " + token);
 
-    /**
-     * [PJ-03]
-     */
-    public ResponseEntity<?> readAllProjectForWorker(){
-        // todo OngTK 기능 구현
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(projectService.readAllProject(token));
     } // func end
 
     /**

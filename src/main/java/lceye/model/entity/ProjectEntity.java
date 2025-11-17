@@ -47,6 +47,8 @@ public class ProjectEntity extends BaseTime{
                 .pjamount(this.pjamount)
                 .pjdesc(this.pjdesc)
                 .pjfilename(this.pjfilename)
+                .mno(this.memberEntity.getMno())
+                .uno(this.unitsEntity.getUno())
                 .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
                 .build();

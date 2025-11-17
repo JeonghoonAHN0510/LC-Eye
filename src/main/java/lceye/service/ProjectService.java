@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -19,6 +21,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
     private final UnitsRepository unitsRepository ;
+
     /**
      * [PJ-01] 프로젝트 등록
      */
@@ -43,6 +46,28 @@ public class ProjectService {
         return projectEntity.toDto();
     } // func end
 
+    /**
+     * [PJ-02] 프로젝트 전체조회
+     */
+    public List<ProjectDto> readAllProject(String token){
+        // [1.1] Token이 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        // [1.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        int cno = jwtService.getCnoFromClaims(token);
+
+        MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        String mrole = jwtService.getRoleFromClaims(token);
+        // [1.3] mrole(역할)에 따른 서로 다른 조회 구현
+        // [1.3.1] mrole = admin or manager : cno 기반 프로젝트 전체 조회
+        if(mrole.equals("WORKER") || mrole.equals("MANAGER")){
+        }
+        // [1.3.2] mrole = worker : mno 기반 본인이 작성한 프로젝트만 조회
+        if(mrole.equals("WORKER")){
+            return projectRepository.findByMemberEntity(memberEntity).stream().map(ProjectEntity :: toDto).toList();
+        }
+        return null;
+    } // func end
 
 
 } // class end
