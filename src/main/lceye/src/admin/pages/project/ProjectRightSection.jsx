@@ -10,24 +10,31 @@ export default function ProjectRightSection(props) {
     return (
         <>
             <div className="projectRigthTop">
-                저장 BUTTON
+                <div className="projectNameBox">프로젝트명</div>
+                <div>
+                    <button>저장</button>
+                </div>
             </div>
-            <div>
-                <AccordionGroup size={"md"}>
+            <div className="projectRightBot">
+                <AccordionGroup
+                    size={"md"}
+                    variant="outlined"
+                    sx={{borderRadius: 'lg'}}
+                    >
                     <Accordion defaultExpanded>
-                        <AccordionSummary>프로젝트 기본정보</AccordionSummary>
+                        <AccordionSummary><div className="sectionName">프로젝트 기본정보</div></AccordionSummary>
                         <AccordionDetails>
                             <ProjectBasicInfo />
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
-                        <AccordionSummary>투입물 · 산출물 정보</AccordionSummary>
+                        <AccordionSummary><div className="sectionName">투입물 · 산출물 정보</div></AccordionSummary>
                         <AccordionDetails>
                             <ProjectExchange />
                         </AccordionDetails>
                     </Accordion>
                     <Accordion>
-                        <AccordionSummary>LCI 결과</AccordionSummary>
+                        <AccordionSummary><div className="sectionName">LCI 결과</div></AccordionSummary>
                         <AccordionDetails>
                             <ProjectResult />
                         </AccordionDetails>
