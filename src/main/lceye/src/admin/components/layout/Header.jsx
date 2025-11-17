@@ -14,13 +14,10 @@ export default function Header(props) {
         try {
             const response = await axios.get("http://localhost:8080/api/member/logout", axiosOption);
             const data = await response.data;
+            console.log(data);
             if (data) {
                 alert('로그아웃 완료');
-                dispatch(checkingLogin({
-                    isAuth: null,
-                    role: false,
-                }))
-                return <Navigate to="/" />
+                location.href="/";
             } // if end
         } catch (error) {
             console.log(error);

@@ -28,10 +28,6 @@ export default function RoleRoute(props){
     useEffect(() => {
         checkAuth();
     }, []);
-    //======================= useEffect - 최초 렌더링시 1회 실행 =======================
-    useEffect(() => {
-        checkAuth();
-    }, [isLogin.isAuth]);
     // 1. 아직 권한 확인중이라면, 안내문구 출력
     if (isLogin.isAuth == null) return <div> 권한 확인 중입니다. </div>
 
