@@ -3,7 +3,6 @@ import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
 import axios from 'axios';
 import { useState } from 'react';
-import { Navigate } from "react-router-dom";
 
 const axiosOption = {withCredentials: true};
 
@@ -21,7 +20,6 @@ export default function LoingRightSection(props) {
             } // obj end
             const response = await axios.post("http://localhost:8080/api/member/login", obj, axiosOption);
             const data = await response.data;
-            console.log(data);
             if (data != null) location.href="/project"
         } catch (error) {
             console.log(error);

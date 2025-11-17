@@ -12,11 +12,13 @@ export default function RoleRoute(props){
     const dispatch = useDispatch();
     //======================= useSelector =======================
     const { isLogin } = useSelector((state) => state.admin);
+    console.log(isLogin);
     //======================= checkAuth =======================
     const checkAuth = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/member/getinfo", axiosOption);
-            dispatch(checkingLogin(response.data));
+            const data = await response.data;
+            dispatch(checkingLogin(data));
         } catch (error) {
             dispatch(checkingLogin({
                 ...isLogin,

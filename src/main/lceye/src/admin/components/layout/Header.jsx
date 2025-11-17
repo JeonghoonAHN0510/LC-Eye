@@ -14,21 +14,23 @@ export default function Header(props) {
         try {
             const response = await axios.get("http://localhost:8080/api/member/logout", axiosOption);
             const data = await response.data;
-            console.log(data);
             if (data) {
                 alert('로그아웃 완료');
-                location.href="/";
+                dispatch(checkingLogin({
+                    isAuth: false,
+                    role: null,
+                    mno: null,
+                    mname: null,
+                    cno: null,
+                    cname: null,
+                }));
+                return <Navigate to="/" replace />
             } // if end
         } catch (error) {
             console.log(error);
         } // try-catch end
     } // func end
 
-
-
-
-    // 혹시 비로그인 상태인데 들어와졌으면, 메인페이지로 이동
-    if (isLogin.isAuth != true) return <Navigate to="/" />
     return (
         <>
             <div className='imgBox'>
