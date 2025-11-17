@@ -15,7 +15,13 @@
     align-items: center;
 }
 
-.infoBox > span{
+.infoBox>span {
     font-weight: bold;
     font-size: 1.2rem;
+}
+
+.infoBox button {
+    border: none;
+    background: none;
+    cursor: pointer;
 }

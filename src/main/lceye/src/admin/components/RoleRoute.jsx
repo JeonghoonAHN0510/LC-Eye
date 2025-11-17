@@ -28,13 +28,20 @@ export default function RoleRoute(props){
     useEffect(() => {
         checkAuth();
     }, []);
+    //======================= useEffect - 최초 렌더링시 1회 실행 =======================
+    useEffect(() => {
+        checkAuth();
+    }, [isLogin.isAuth]);
     // 1. 아직 권한 확인중이라면, 안내문구 출력
     if (isLogin.isAuth == null) return <div> 권한 확인 중입니다. </div>
 
     // 2. 만약 비로그인 상태라면, 메인페이지로 이동
     if (isLogin.isAuth == false) return <Navigate to="/"/>
 
-    // 3. 만약 로그인 상태라면, 자식 컴포넌트 렌더링하기
+    // 3. 
+    if (!props.roles.includes(isLogin.role)) return <Navigate to="/"/>
+
+    // 4. 만약 로그인 상태라면, 자식 컴포넌트 렌더링하기
     return(
         <>
             <Outlet/>

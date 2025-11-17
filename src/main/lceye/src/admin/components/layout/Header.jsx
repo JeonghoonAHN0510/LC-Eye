@@ -1,11 +1,34 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from "react-router-dom";
 import headerLogo from '../../../assets/img/LC-Eye_HeaderLogo.svg';
-import Button from '@mui/joy/Button';
+import axios from 'axios';
+import { checkingLogin } from '../../store/adminSlice';
+
+const axiosOption = {withCredentials: true};
 
 export default function Header(props) {
     const { isLogin } = useSelector((state) => state.admin);
-    console.log(isLogin);
+    const dispatch = useDispatch();
+
+    const logout = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/api/member/logout", axiosOption);
+            const data = await response.data;
+            if (data){
+                alert('로그아웃 완료');
+                dispatch(checkingLogin({
+                    isAuth: null,
+                    role: false,
+                }))
+                return <Navigate to="/" />
+            } // if end
+        } catch (error) {
+            console.log(error);
+        } // try-catch end
+    } // func end
+
+
+
 
     // 혹시 비로그인 상태인데 들어와졌으면, 메인페이지로 이동
     if (isLogin.isAuth != true) return <Navigate to="/" />
@@ -22,9 +45,7 @@ export default function Header(props) {
                             : "실무자"
                 })님 <br />
                 소속 : {isLogin.cname}
-
-                로그아웃
-
+                <button onClick={logout}>로그아웃</button>
             </div>
         </>
     ) // return end
