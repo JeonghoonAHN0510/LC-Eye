@@ -14,12 +14,9 @@ body {
   /* 기본 줄 간격을 1.5배로 설정 (가독성 향상) */
 }
 
-/* [가장 중요!] 레이아웃 계산 방식을 통일합니다. (Box-sizing)
-  이것을 적용하면 padding이나 border를 추가해도 
-  개발자가 지정한 width(너비) 값이 늘어나지 않아 계산이 매우 쉬워집니다.
-*/
 html {
   box-sizing: border-box;
+  width: 1440px;
 }
 
 *,

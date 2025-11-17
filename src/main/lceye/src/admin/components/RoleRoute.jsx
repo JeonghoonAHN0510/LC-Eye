@@ -12,11 +12,13 @@ export default function RoleRoute(props){
     const dispatch = useDispatch();
     //======================= useSelector =======================
     const { isLogin } = useSelector((state) => state.admin);
+    console.log(isLogin);
     //======================= checkAuth =======================
     const checkAuth = async () => {
         try {
             const response = await axios.get("http://localhost:8080/api/member/getinfo", axiosOption);
-            dispatch(checkingLogin(response.data));
+            const data = await response.data;
+            dispatch(checkingLogin(data));
         } catch (error) {
             dispatch(checkingLogin({
                 ...isLogin,
@@ -34,7 +36,10 @@ export default function RoleRoute(props){
     // 2. 만약 비로그인 상태라면, 메인페이지로 이동
     if (isLogin.isAuth == false) return <Navigate to="/"/>
 
-    // 3. 만약 로그인 상태라면, 자식 컴포넌트 렌더링하기
+    // 3. 
+    if (!props.roles.includes(isLogin.role)) return <Navigate to="/"/>
+
+    // 4. 만약 로그인 상태라면, 자식 컴포넌트 렌더링하기
     return(
         <>
             <Outlet/>
