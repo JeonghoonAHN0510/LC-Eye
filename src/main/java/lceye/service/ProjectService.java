@@ -93,6 +93,23 @@ public class ProjectService {
         return false;
     }// func end
 
+    /**
+     * 프로젝트 파일 삭제 시 파일명 삭제
+     *
+     * @param pjno 프로젝트 번호
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean deletePjfilename(int pjno){
+        Optional<ProjectEntity> optional = projectRepository.findById(pjno);
+        if (optional.isPresent()){
+            ProjectEntity entity = optional.get();
+            entity.setPjfilename(null);
+            return true;
+        }// if end
+        return false;
+    }// func end
+
 
 
 } // class end

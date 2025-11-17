@@ -141,7 +141,11 @@ public class ExchangeService {
             LocalDateTime dateTime = LocalDateTime.parse(dto.getCreatedate(),change);
             String fileName = name + dateTime.format(formatter);
             System.out.println(fileService.deleteFile(fileName,"exchange"));
-            return fileService.deleteFile(fileName,"exchange");
+            boolean result = fileService.deleteFile(fileName,"exchange");
+            if (result){
+                boolean results = projectService.deletePjfilename(pjno);
+                if (results) return true;
+            }// if end
         }// if end
         return false;
     }// func end
