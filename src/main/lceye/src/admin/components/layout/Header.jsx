@@ -4,7 +4,7 @@ import headerLogo from '../../../assets/img/LC-Eye_HeaderLogo.svg';
 import axios from 'axios';
 import { checkingLogin } from '../../store/adminSlice';
 
-const axiosOption = {withCredentials: true};
+const axiosOption = { withCredentials: true };
 
 export default function Header(props) {
     const { isLogin } = useSelector((state) => state.admin);
@@ -14,7 +14,7 @@ export default function Header(props) {
         try {
             const response = await axios.get("http://localhost:8080/api/member/logout", axiosOption);
             const data = await response.data;
-            if (data){
+            if (data) {
                 alert('로그아웃 완료');
                 dispatch(checkingLogin({
                     isAuth: null,
@@ -38,14 +38,20 @@ export default function Header(props) {
                 <img src={headerLogo} alt="headerLogo" />
             </div>
             <div className='infoBox'>
-                <span>{isLogin.mname}</span>
-                ({
-                    isLogin.role == "ADMIN" ? "시스템 관리자"
-                        : isLogin.role == "MANAGER" ? "회사 관리자"
-                            : "실무자"
-                })님 <br />
-                소속 : {isLogin.cname}
-                <button onClick={logout}>로그아웃</button>
+                <div>
+                    <span className='infoMname'>
+                        {isLogin.mname}
+                    </span>
+                    ({
+                        isLogin.role == "ADMIN" ? "시스템 관리자"
+                            : isLogin.role == "MANAGER" ? "회사 관리자"
+                                : "실무자"
+                    })님 <br />
+                </div>
+                <div>
+                    소속 : {isLogin.cname}
+                    <button onClick={logout}>로그아웃</button>
+                </div>
             </div>
         </>
     ) // return end

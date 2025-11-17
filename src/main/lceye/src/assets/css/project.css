@@ -2,7 +2,13 @@
     display: flex;
     justify-content: space-between;
     border-bottom: 3px solid #2F3E77;
+    width: 1440px;
     height: 5rem;
+    position: fixed;
+    top: 0;
+    /* width: 100% */
+    left: 0;
+    right: 0;
 }
 
 .header img {
@@ -10,12 +16,23 @@
     height: 4rem;
 }
 
+.projectSection {
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .imgBox {
     display: flex;
     align-items: center;
 }
 
-.infoBox>span {
+.infoBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.infoMname {
     font-weight: bold;
     font-size: 1.2rem;
 }

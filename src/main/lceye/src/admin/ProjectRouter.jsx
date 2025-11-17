@@ -1,7 +1,7 @@
 import Header from './components/layout/Header.jsx';
 import ProjectLeftSection from "./pages/project/ProjectLeftSection";
 import ProjectRightSection from "./pages/project/ProjectRightSection";
-import '../assets/css/header.css';
+import '../assets/css/project.css';
 
 export default function ProjectRouter(props) {
     return (
@@ -9,9 +9,13 @@ export default function ProjectRouter(props) {
             <div className='header'>
                 <Header />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-evenly" }}>
-                <ProjectLeftSection />
-                <ProjectRightSection />
+            <div className='projectSection'>
+                <div className='projectLeftSection'>
+                    <ProjectLeftSection />
+                </div>
+                <div className='projectRightSection'>
+                    <ProjectRightSection />
+                </div>
             </div>
         </>
     ) // return end
