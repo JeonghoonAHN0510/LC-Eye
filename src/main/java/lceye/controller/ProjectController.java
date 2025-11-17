@@ -1,7 +1,5 @@
 package lceye.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lceye.model.dto.ProjectDto;
 import lceye.service.ProjectService;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +47,7 @@ public class ProjectController {
     /**
      * [PJ-02] 프로젝트 전체조회
      * <p>
-     * 프로젝트를 전체 조회한다. 단 사이드바 출력용으로 최소한의 자료만 출력한다.
+     * 프로젝트를 전체 조회한다.
      * <p>
      * - 참고 : 권한을 확인하여 Manager, Admin인 경우, 작성자와 상관없이 해당 회사의 모든 프로젝트를 조회한다.
      * <p>
@@ -66,6 +64,11 @@ public class ProjectController {
     /**
      * [PJ-03] 프로젝트 개별조회
      * @author OngTK
+     * <p>
+     * 권한이 Manager, Admin인 경우 동일한 회사의 타직원이 작성한 프로젝트 정보를 조회할 수 있다.
+     * <p>
+     * 권한이 Worker인 실무자는 본인의 프로젝트 정보만 조회할 수 있다. 동일한 회사라도 다른 계정에서 작성한 프로젝트 정보는 조회할 수 없다.
+     * @quthor OngTK
      */
     @GetMapping
     public ResponseEntity<?> readProject(@CookieValue(value = "loginMember", required = false) String token,
@@ -74,11 +77,19 @@ public class ProjectController {
     } // func end
 
     /**
-     * [PJ-05]
+     * [PJ-04] 프로젝트 수정
+     * <p>
+     * [프로젝트번호, 프로젝트명, 기준양, 기준단위, 프로젝트 설명] 정보를 받아 수정한다.
+     * @author OngTK
      */
-    public ResponseEntity<?> updateProject(){
-        // todo OngTK 기능 구현
-        return ResponseEntity.ok(true);
+    @PutMapping
+    public ResponseEntity<?> updateProject(@CookieValue(value = "loginMember", required = false) String token,
+                                           @RequestBody ProjectDto projectDto){
+        ProjectDto result = projectService.updateProject(token, projectDto);
+        if(result == null){
+            return ResponseEntity.status(403).body("잘못된 요청입니다.");
+        }
+        return ResponseEntity.ok(result);
     }
 
 } // class end

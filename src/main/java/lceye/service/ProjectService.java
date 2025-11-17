@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -88,7 +89,7 @@ public class ProjectService {
         // [3.5] mrole = admin or manager
         if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
             // [3.5.1] project Entity 조회
-             ProjectEntity result = projectRepository.getById(pjNo);
+             ProjectEntity result = projectRepository.getReferenceById(pjNo);
             // [3.5.2] 작성자의 cno 와 로그인한 계정의 cno가 일치하지 않으면 null
             if( result.getMemberEntity().getCompanyEntity().getCno() != memberEntity.getCompanyEntity().getCno()) return null;
             // [3.5.3] 일치하므로 결과 반환
@@ -97,7 +98,7 @@ public class ProjectService {
         // [3.6] mrole = worker
         if(mrole.equals("WORKER")){
             // [3.6.1] 프로젝트 Entity 조회
-            ProjectDto result = projectRepository.getById(pjNo).toDto();
+            ProjectDto result = projectRepository.getReferenceById(pjNo).toDto();
             // [3.6.2] 조회 결과의 mno와 로그인 계정의 mno가 일치하지 않으므로 null
             if(result.getMno() != mno) return null; //
             // [3.6.3] 조회 결과의 mno와 로그인 계정의 mno가 일치하므로 결과 반환
@@ -105,5 +106,33 @@ public class ProjectService {
         }
         return null;
     } // func end
+
+    /**
+     * [PJ-04] 프로젝트 수정
+     */
+    public ProjectDto updateProject(String token, ProjectDto projectDto){
+        // [4.1] Token, pjNo가 없으면 null로 반환
+        if(!jwtService.validateToken(token)) return null;
+        if(projectDto.getPjno() == 0) return null;
+        // [4.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        int mno = jwtService.getMnoFromClaims(token);
+        // [4.3] projectEntity 조회
+        Optional<ProjectEntity> optional = projectRepository.findById(projectDto.getPjno());
+        // [4.4] projectEntity 가 존재하는 지 확인
+        if(optional.isPresent()){
+            // [4.5] projectEntity를 optinal에서 꺼냄
+            ProjectEntity entity = optional.get();
+            // [4.6] projectEntity의 작성자와 지금 요청자가 일치하는 지 확인
+            if(entity.getMemberEntity().getMno() != mno) return null;
+            // [4.7] 일치할 경우, entity setter 진행
+            entity.setPjname(projectDto.getPjname());
+            entity.setPjdesc(projectDto.getPjdesc());
+            entity.setPjamount(projectDto.getPjamount());
+            entity.setUnitsEntity(unitsRepository.findById(projectDto.getUno()).get());
+            // [4.8] 결과 반환
+            return entity.toDto();
+        }
+        return null;
+    }// func end
 
 } // class end
