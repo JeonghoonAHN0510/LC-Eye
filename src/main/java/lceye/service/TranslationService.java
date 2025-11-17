@@ -6,6 +6,7 @@ import com.google.cloud.translate.v3.LocationName;
 import com.google.cloud.translate.v3.TranslateTextRequest;
 import com.google.cloud.translate.v3.TranslateTextResponse;
 import com.google.cloud.translate.v3.TranslationServiceClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,12 +15,15 @@ import java.util.List;
 @Service @Transactional
 public class TranslationService {
 
+    @Value("${service.deepl.api-key}")
+    private String deeplApiKey;
+
     /**
      * Google Translation API PROJECT ID
      *
      * @author 민성호
      */
-    private static final String Project_id = "tidy-landing-478007-q3";
+    //private static final String Project_id = "tidy-landing-478007-q3";
 
     /**
      * Google API 호출하여 클라이언트가 입력한 문자열을
@@ -72,8 +76,7 @@ public class TranslationService {
      * @author 민성호
      */
     public String Translate(String text){
-        String apiKey = "1e0809ea-c361-4e73-8c1b-488fb05e57bc:fx";
-        DeepLClient client = new DeepLClient(apiKey);
+        DeepLClient client = new DeepLClient(deeplApiKey);
         try{
             TextResult result = client.translateText(text,"ko","en-US");
             return result.getText();
