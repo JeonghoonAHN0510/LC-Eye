@@ -58,8 +58,9 @@ public class ExchangeController {
             return ResponseEntity.ok(pjnoMap);
         } else if (cnoMap != null && !cnoMap.isEmpty()) {
             return ResponseEntity.ok(cnoMap);
+        }else {
+            return ResponseEntity.ok(exchangeService.similarity(inputList));
         }// if end
-        return ResponseEntity.status(404).body(null);
     }// func end
 
     /**

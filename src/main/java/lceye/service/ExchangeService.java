@@ -1,7 +1,11 @@
 package lceye.service;
 
+import lceye.model.dto.ProcessInfoDto;
 import lceye.model.dto.ProjectDto;
+import lceye.model.entity.ProcessInfoEntity;
+import lceye.model.repository.ProcessInfoRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +20,7 @@ public class ExchangeService {
     private final JwtService jwtService;
     private final ProjectService projectService;
     private final TranslationService translationService;
+    private final ProcessInfoRepository processInfoRepository;
 
     /**
      * 투입물·산출물 저장/수정
@@ -68,12 +73,9 @@ public class ExchangeService {
         if (!jwtService.validateToken(token)) return null;
         int cno = jwtService.getCnoFromClaims(token);
         System.out.println("clientInput = " + clientInput + ", token = " + token);
-        // 1. 성능 개선: 클라이언트 입력을 Set으로 변환 (O(1) 검색)
         Set<String> inputSet = new HashSet<>(clientInput);
-        // 2. 매칭 결과를 저장할 Map. Value를 List로 정의하여 중복 매칭 결과 저장
         Map<String, List<String>> requestMap = new HashMap<>();
         String companyNumber = String.valueOf(cno);
-        // 파일 서비스 호출
         List<Map<String, Object>> list = fileService.filterFile(companyNumber);
         for (Map<String, Object> map : list) {
             Object obj = map.get("exchanges");
@@ -83,7 +85,7 @@ public class ExchangeService {
                         Object pjeNameObj = exchange.get("pjename");
                         Object pNameObj = exchange.get("pname");
 
-                        // pjeName이 String 타입이고, Set에 포함되는지 확인 (O(1) 검색)
+                        // pjeName이 String 타입이고, Set에 포함되는지 확인
                         if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
                             String pName = pNameObj != null ? pNameObj.toString() : "N/A";
                             // 매칭된 결과를 해당 Key의 리스트에 추가 (덮어쓰기 방지)
@@ -112,21 +114,16 @@ public class ExchangeService {
         int mno = jwtService.getMnoFromClaims(token);
         System.out.println("clientInput = " + clientInput + ", token = " + token);
         List<ProjectDto> projectDtos = projectService.findByMno(mno);
-        // 1. 성능 개선: 클라이언트 입력을 Set으로 변환 (O(1) 검색)
         Set<String> inputSet = new HashSet<>(clientInput);
-        // 2. 매칭 결과를 저장할 Map. Value를 List로 하여 중복 매칭 시 모든 결과를 저장
         Map<String, List<String>> requestMap = new HashMap<>();
         List<Integer> pjnoList = projectDtos.stream().map(ProjectDto::getPjno).toList();
 
         for (int pjno : pjnoList) {
-            // 파일 서비스는 예외 처리 고려
             List<Map<String, Object>> list = fileService.filterFile(String.valueOf(pjno));
             for (Map<String, Object> map : list) {
                 Object obj = map.get("exchanges");
-                // 3. 타입 안전성 확보: 캐스팅 전에 검증
                 if (obj instanceof List<?> rawList) {
                     for (Object exchangeObj : rawList) {
-                        // 내부 요소가 Map인지 확인
                         if (exchangeObj instanceof Map exchange) {
                             Object pjeNameObj = exchange.get("pjename");
                             Object pNameObj = exchange.get("pname");
@@ -177,6 +174,39 @@ public class ExchangeService {
             }// if end
         }// if end
         return false;
+    }// func end
+
+    /**
+     * 입력받은 투입물·산출물을 번역해서 db데이터와 유사도 측정
+     *
+     * @param clientInput 입력받은 투입물·산출물
+     * @return Map<String,Object>
+     * @author 민성호
+     */
+    public Map<String,Object> similarity(List<String> clientInput){
+        List<String> transInput = translationService.TransInput(clientInput);
+        System.out.println("transInput = " + transInput);
+        List<ProcessInfoDto> processInfoEntities = processInfoRepository.findAll()
+                .stream().map(ProcessInfoEntity::toDto).toList();
+
+        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+        final double benchmark = 0.90; // 90% 기준
+        Map<String,List<String>> resultMatches = new HashMap<>();
+        for (String input : transInput){
+            List<String> matches = new ArrayList<>();
+            if ("경유".equals(input)) input = "disel";
+            for (ProcessInfoDto dto : processInfoEntities){
+                Double score = similarity.apply(input,dto.getPcdesc());
+                if (score >= benchmark){ // 유사도 90프로 이상
+                    matches.add(dto.getPcname());
+                }// if end
+            }// for end
+            if (!matches.isEmpty()){
+                resultMatches.put(input,matches);
+            }// if end
+        }// for end
+        System.out.println("resultMatches : " + resultMatches);
+        return new HashMap<>(resultMatches);
     }// func end
 
 }// class end
