@@ -31,7 +31,7 @@ public class JwtService {
                 // 2. loginMno에 mno 저장
                 .claim("loginMno", memberDto.getMno())
                 // 3. loginCno에 cno 저장
-                .claim("loginCname", memberDto.getCname())
+                .claim("loginCno", memberDto.getCno())
                 // 4. loginRole에 mrole 저장
                 .claim("loginRole", memberDto.getMrole())
                 // 5. 토큰 발급시간에 현재 시간 저장
@@ -90,7 +90,7 @@ public class JwtService {
     public String getRoleFromClaims(String token){
         return getClaimsFromToken(token).get("loginRole", String.class);
     } // func end
-    public String getCnameFromClaims(String token){
-        return getClaimsFromToken(token).get("loginCname", String.class);
+    public int getCnoFromClaims(String token){
+        return getClaimsFromToken(token).get("loginCno", Integer.class);
     } // func end
 } // class end

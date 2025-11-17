@@ -10,8 +10,10 @@ import java.util.Optional;
 
 import jakarta.transaction.Transactional;
 import lceye.model.dto.MemberDto;
+import lceye.model.entity.CompanyEntity;
 import lceye.model.entity.MemberEntity;
 import lceye.model.mapper.MemberMapper;
+import lceye.model.repository.CompanyRepository;
 import lceye.model.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final CompanyRepository companyRepository;
     private final MemberMapper memberMapper;
     private final JwtService jwtService;
     private final RedisTemplate<String, Object> memberTemplate;
@@ -89,17 +92,14 @@ public class MemberService {
         if (redisToken == null || !redisToken.equals(token)) return null;
         // 5. 토큰으로부터 권한과 회사명 추출하기
         String role = jwtService.getRoleFromClaims(token);
-        String cname = jwtService.getCnameFromClaims(token);
+        int cno = jwtService.getCnoFromClaims(token);
         // 6. 회원번호로 회원명, 회사번호 추출하기
         Optional<MemberEntity> memberEntity = memberRepository.findById(mno);
+        Optional<CompanyEntity> companyEntity = companyRepository.findById(cno);
         String mname = null;
-        int cno = 0;
-        if (memberEntity.isPresent()){
-            mname = memberEntity.get().getMname();
-            if (memberEntity.get().getCompanyEntity() != null){
-                cno = memberEntity.get().getCompanyEntity().getCno();
-            } // if end
-        } // if end
+        String cname = null;
+        if (memberEntity.isPresent()) mname = memberEntity.get().getMname();
+        if (companyEntity.isPresent()) cname = companyEntity.get().getCname();
         // 7. 추출한 정보를 Map 형식으로 변환하기
         Map<String, Object> infoByToken = new HashMap<>();
         infoByToken.put("mno", mno);
