@@ -192,17 +192,25 @@ public class ExchangeService {
         JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
         final double benchmark = 0.90; // 90% 기준
         Map<String,List<String>> resultMatches = new HashMap<>();
-        for (String input : transInput){
+        for (int i = 0; i < transInput.size(); i++){
+            String client = clientInput.get(i);
+            String input = transInput.get(i);
             List<String> matches = new ArrayList<>();
-            if ("경유".equals(input)) input = "disel";
+            if ("Routing".equals(input)) input = "diesel";
+            String lowerInput = input.toLowerCase();
             for (ProcessInfoDto dto : processInfoEntities){
-                Double score = similarity.apply(input,dto.getPcdesc());
-                if (score >= benchmark){ // 유사도 90프로 이상
+                String lowerPcdesc = dto.getPcdesc().toLowerCase();
+                String lowerPcname = dto.getPcname().toLowerCase();
+                Double scoreName = similarity.apply(lowerInput,lowerPcname);
+                Double scoreDesc = similarity.apply(lowerInput,lowerPcdesc);
+                boolean contains = lowerPcname.contains(lowerInput);
+                boolean containsDesc = lowerPcdesc.contains(lowerInput);
+                if (scoreName >= benchmark|| contains || scoreDesc >= benchmark || containsDesc){ // 유사도 90프로 이상
                     matches.add(dto.getPcname());
                 }// if end
             }// for end
             if (!matches.isEmpty()){
-                resultMatches.put(input,matches);
+                resultMatches.put(client,matches);
             }// if end
         }// for end
         System.out.println("resultMatches : " + resultMatches);
