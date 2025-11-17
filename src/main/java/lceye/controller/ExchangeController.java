@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController @RequestMapping("/api/inout")
@@ -36,6 +37,19 @@ public class ExchangeController {
     public ResponseEntity<?> saveIOInfo(@CookieValue(value = "loginMember", required = false) String token,
                                         @RequestBody Map<String,Object> map){
         return ResponseEntity.ok(exchangeService.saveInfo(map,token));
+    }// func end
+
+    @PostMapping("/auto")
+    public ResponseEntity<?> matchIO(@CookieValue(value = "loginMember", required = false) String token,
+                                     @RequestBody List<String> inputList){
+        Map<String,Object> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
+        Map<String,Object> cnoMap = exchangeService.autoMatchCno(inputList,token);
+        if (pjnoMap != null && !pjnoMap.isEmpty()){
+            return ResponseEntity.ok(pjnoMap);
+        } else if (cnoMap != null && !cnoMap.isEmpty()) {
+            return ResponseEntity.ok(cnoMap);
+        }// if end
+        return ResponseEntity.status(404).body(null);
     }// func end
 
 }// class end
