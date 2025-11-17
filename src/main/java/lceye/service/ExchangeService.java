@@ -6,14 +6,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Service @Transactional @RequiredArgsConstructor
 public class ExchangeService {
 
     private final FileService fileService;
+    private final JwtService jwtService;
 
-    public boolean saveInfo(Map<String, Object> exchangeList , int cno){
+    /**
+     * 투입물·산출물 저장/수정
+     *
+     * @param exchangeList 투입물·산출물
+     * @param token 작성자 토큰
+     * @return boolean
+     * @author 민성호
+     */
+    public boolean saveInfo(Map<String, Object> exchangeList , String token){
+        if (!jwtService.validateToken(token)) return false;
+        int cno = jwtService.getCnoFromClaims(token);
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         // 파일 이름 형식 , cno_pjno_type_datetime(20251113_1600)
@@ -30,5 +42,14 @@ public class ExchangeService {
         }// if end
         return fileService.writeFile("exchange",fileName,exchangeList);
     }// func end
+
+    //public Map<String,Object> autoMatch(List<String> clientInput , int mno , int cno){
+    //    String projectNumber; // 프로젝트 번호
+    //    String companyNumber = ""+cno;
+    //    List<Map<String,Object>> list = fileService.filterFile(companyNumber);
+    //    for (Map<String , Object> map : list){
+    //        map.get("exchanges");
+    //    }
+    //}// func end
 
 }// class end
