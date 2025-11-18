@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import "@assets/css/resizableTable.css"; // ResizableTable.css
+import "../../../assets/css/projectListTable.css";
 
 // ① 내부 훅을 파일 상단에 붙여넣기 (export 필요 없음)
 function useColWidths({ rememberKey, columns, minColWidth = 30 }) {
