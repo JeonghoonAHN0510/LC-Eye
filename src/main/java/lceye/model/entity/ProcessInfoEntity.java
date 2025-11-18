@@ -27,8 +27,8 @@ public class ProcessInfoEntity extends BaseTime{
     private String pcdesc;
     @Column(columnDefinition = "varchar(100)")
     private String pcsource;
-    @Column(columnDefinition = "char(41)")
-    private String pcfilename;
+//    @Column(columnDefinition = "char(41)") // OngTK 비활성화
+//    private String pcfilename;
 
     // 2. toDto 생성
     public ProcessInfoDto toDto(){
@@ -38,7 +38,7 @@ public class ProcessInfoEntity extends BaseTime{
                 .pcname(this.pcname)
                 .pcdesc(this.pcdesc)
                 .pcsource(this.pcsource)
-                .pcfilename(this.pcfilename)
+//                .pcfilename(this.pcfilename) // OngTK 비활성화
                 .createdate(this.getCreatedate().toString())
                 .updatedate(this.getUpdatedate().toString())
                 .build();

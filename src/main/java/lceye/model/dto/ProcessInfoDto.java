@@ -17,7 +17,7 @@ public class ProcessInfoDto {
     private String pcname;
     private String pcdesc;
     private String pcsource;
-    private String pcfilename;
+//    private String pcfilename; // OngTK 비활성화
     private String createdate;
     private String updatedate;
 
@@ -31,7 +31,7 @@ public class ProcessInfoDto {
                 .pcname(this.pcname)
                 .pcdesc(this.pcdesc)
                 .pcsource(this.pcsource)
-                .pcfilename(this.pcfilename)
+//                .pcfilename(this.pcfilename) // OngTK 비활성화
                 .build();
     } // func end
 } // class end
