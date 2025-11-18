@@ -26,10 +26,7 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<?> saveProject(@CookieValue(value = "loginMember", required = false) String token,
                                          @RequestBody ProjectDto projectDto){
-        System.out.println("ProjectController.saveProject");
-        System.out.println("token = " + token + ", projectDto = " + projectDto);
         ProjectDto result = null;
-        // todo OngTK 기능 구현
         // [1.1] 쿠키 내 토큰이 존재
         if(token!=null){
             result = projectService.saveProject(token,projectDto);
@@ -56,8 +53,6 @@ public class ProjectController {
      */
     @GetMapping("/all")
     public ResponseEntity<?> readAllProject(@CookieValue(value = "loginMember", required = false) String token){
-        System.out.println("ProjectController.readAllProject");
-        System.out.println("token = " + token);
         return ResponseEntity.ok(projectService.readAllProject(token));
     } // func end
 

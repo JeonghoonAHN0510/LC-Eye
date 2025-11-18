@@ -1,5 +1,6 @@
 package lceye.controller;
 
+import lceye.service.LCICalculateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LCICalculateController {
 
+    private final LCICalculateService lciCalculateService;
+
     /**
      * [LCI-01] LCI 계산하기
      * <p>
@@ -23,7 +26,7 @@ public class LCICalculateController {
     @GetMapping("/calc")
     public ResponseEntity<?> calcLCI(@RequestParam int pjno){
         // todo OngTK calcLCI 구현 필요
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(lciCalculateService.calcLCI(pjno));
     } // func end
 
     /**
