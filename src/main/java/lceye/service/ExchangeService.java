@@ -59,18 +59,17 @@ public class ExchangeService {
         String projectNumber = String.valueOf(exchangeList.get("pjno"));
         String name = cno + "_" + projectNumber + "_exchange_";
         String fileName;
-        String createdate = String.valueOf(exchangeList.get("createdate"));
-        if (createdate != null && !createdate.equalsIgnoreCase("null") ){ // createdate 키의 값이 null이 아니면
-            // createdate 키의 값을 파일명 형식에 맞게 형식 변환
-            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime dateTime = LocalDateTime.parse(createdate,change);
+        if(pjDto.getPjfilename() != null && !pjDto.getPjfilename().isEmpty()){ // json 파일명 존재할때
+            Map<String,Object> oldJsonFile = fileService.readFile("exchange",pjDto.getPjfilename());
+            exchangeList.put("createdate",oldJsonFile.get("createdate"));
             exchangeList.put("updatedate",now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String createdate = String.valueOf(oldJsonFile.get("createdate"));
+            LocalDateTime dateTime = LocalDateTime.parse(createdate,change);
             fileName = name + dateTime.format(formatter);
-            System.out.println("dateTime = " + dateTime);
-        }else { // 비어있으면 파일명 형식에 맞게 현재 날짜시간을 변환
+        }else {
             exchangeList.put("createdate",now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             fileName = name + now.format(formatter);
-            System.out.println("fileName = " + fileName);
         }// if end
         boolean result = fileService.writeFile("exchange",fileName,exchangeList);
         if (result){
