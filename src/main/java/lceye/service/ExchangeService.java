@@ -2,8 +2,7 @@ package lceye.service;
 
 import lceye.model.dto.ProcessInfoDto;
 import lceye.model.dto.ProjectDto;
-import lceye.model.entity.ProcessInfoEntity;
-import lceye.model.repository.ProcessInfoRepository;
+import lceye.model.dto.UnitsDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,8 @@ public class ExchangeService {
     private final JwtService jwtService;
     private final ProjectService projectService;
     private final TranslationService translationService;
-    private final ProcessInfoRepository processInfoRepository;
+    private final UnitsService unitsService;
+    private final ProcessInfoService processInfoService;
 
     /**
      * 투입물·산출물 저장/수정
@@ -33,13 +33,32 @@ public class ExchangeService {
     public boolean saveInfo(Map<String, Object> exchangeList , String token){
         if (!jwtService.validateToken(token)) return false;
         int cno = jwtService.getCnoFromClaims(token);
+        int mno = jwtService.getMnoFromClaims(token);
+        int pjNumber = (int) exchangeList.get("pjno");
+        ProjectDto pjDto = projectService.findByPjno(pjNumber);
+        if (pjDto == null) return false;
+        UnitsDto unitsDto = unitsService.findByUno(pjDto.getUno());
+        Object exchange = exchangeList.get("exchanges");
+        if (exchange instanceof List<?> exList){
+            for (Object inout : exList){
+                if (inout instanceof Map io){
+                    ProcessInfoDto pcDto = processInfoService.findByPcname(String.valueOf(io.get("pname")));
+                    io.put("puuid",pcDto.getPcuuid());
+                }// if end
+            }// for end
+        }// if end
+        exchangeList.put("pjname",pjDto.getPjname());
+        exchangeList.put("mno",mno);
+        exchangeList.put("pjamount",pjDto.getPjamount());
+        exchangeList.put("uno",pjDto.getUno());
+        exchangeList.put("pjdesc",pjDto.getPjdesc());
+        exchangeList.put("uname",unitsDto.getUnit());
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
         // 파일 이름 형식 , cno_pjno_type_datetime(20251113_1600)
         String projectNumber = String.valueOf(exchangeList.get("pjno"));
         String name = cno + "_" + projectNumber + "_exchange_";
         String fileName;
-        int pjNumber = (int) exchangeList.get("pjno");
         String createdate = String.valueOf(exchangeList.get("createdate"));
         if (createdate != null && !createdate.equalsIgnoreCase("null") ){ // createdate 키의 값이 null이 아니면
             // createdate 키의 값을 파일명 형식에 맞게 형식 변환
@@ -186,9 +205,7 @@ public class ExchangeService {
     public Map<String,Object> similarity(List<String> clientInput){
         List<String> transInput = translationService.TransInput(clientInput);
         System.out.println("transInput = " + transInput);
-        List<ProcessInfoDto> processInfoEntities = processInfoRepository.findAll()
-                .stream().map(ProcessInfoEntity::toDto).toList();
-
+        List<ProcessInfoDto> processInfoEntities = processInfoService.getProcessInfo();
         JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
         final double benchmark = 0.90; // 90% 기준
         Map<String,List<String>> resultMatches = new HashMap<>();
