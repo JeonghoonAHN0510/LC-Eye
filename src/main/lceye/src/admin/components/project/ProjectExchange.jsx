@@ -1,21 +1,16 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import Box from '@mui/joy/Box';
 import Table from '@mui/joy/Table';
-import Typography from '@mui/joy/Typography';
-import Sheet from '@mui/joy/Sheet';
 import Checkbox from '@mui/joy/Checkbox';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import IconButton from '@mui/joy/IconButton';
-import Link from '@mui/joy/Link';
-import Tooltip from '@mui/joy/Tooltip';
-import Select from '@mui/joy/Select';
-import Option from '@mui/joy/Option';
-import { visuallyHidden } from '@mui/utils';
 import { useState } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 export default function ProjectExchange(props){
+
+    // 쿼리 파라미터 가져오기
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const pjno = params.get("pjno");
+
     // 행 데이터
     const [inputRows, setInputRows] = useState([{ id : 1 , pjename : "" , pjeamount : "" , uname : "", pname : "" , isInput : true}])
     const [outputRows, setOutputRows] = useState([{ id : 1 , pjename : "" , pjeamount : "" , uname : "", pname : "" , isInput : false }])
@@ -86,7 +81,73 @@ export default function ProjectExchange(props){
         setOutputRows(outputRows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
     };
 
+    // 초기화
+    const clearIOInfo = async () => {
+        try{
+            const response = await axios.delete(`http://localhost:8080/api/inout?pjno=${pjno}`);
+            const data = response.data;
+            if(data){
+                alert("초기화 되었습니다.");
+            }else{
+                alert("초기화에 실패하였습니다.");
+            }// if end
+        }catch(e){
+            console.log(e);
+        }// try end
+    }// f end
 
+    // 투입물 선택삭제
+    const deleteInputRows = () => {
+        if(inputCheckedList.length === 0){
+            alert("삭제할 행을 선택해주세요.");
+            return
+        }// if end
+        setInputRows(inputRows.filter(row => !inputCheckedList.includes(row.id)));
+        setInputCheckedList([]); // 삭제후 체크박스 초기화
+    }// f end
+
+    // 산출물 선택삭제
+    const deleteOutputRows = () => {
+        if(outputCheckedList.length === 0){
+            alert("삭제할 행을 선택해주세요.");
+            return
+        }// if end
+        setOutputRows(outputRows.filter(row => !outputCheckedList.includes(row.id)));
+        setOutputCheckedList([]); // 삭제후 체크박스 초기화
+    }//  f end
+
+    // 투입물·산출물 선택삭제
+    const handleDelete = () => {
+        const hasInput = inputCheckedList.length > 0;
+        const hasOutput = outputCheckedList.length > 0;
+
+        if(!hasInput && !hasOutput){
+            alert("삭제할 행을 선택해주세요.");
+            return;
+        }
+
+        if(hasInput) deleteInputRows();
+        if(hasOutput) deleteOutputRows();
+    }// f end
+
+    // 투입물·산출물 저장
+    const saveIOInfo = async () => {
+        const obj = {
+            pjno : pjno ,
+            exchanges : [...inputRows , ...outputRows]
+        };
+        try{
+            const response = await axios.post("http://localhost:8080/api/inout",obj);
+            const data = response.data;
+            if(data){
+                alert('저장 성공');
+            }else{
+                alert('저장 실패');
+            }// if end
+        }catch(e){
+            console.log(e);
+        }// try end
+    }// f end
 
     return(
         <>
@@ -103,7 +164,9 @@ export default function ProjectExchange(props){
             <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
                 계산
             </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
+            <button 
+            style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}
+            onClick={() => { handleDelete(); }}>
                 삭제
             </button>
             <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
@@ -235,29 +298,10 @@ export default function ProjectExchange(props){
             borderBottom: "1px solid #aaa",
             lineHeight: "0.1em",
             margin: "10px 0 20px",
+            paddingTop: "20px"
         }}>            
         </div>
         <hr/>
-        <div style={{alignItems: "center" , justifyContent: "end" , display: "flex"}}>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                선택 매칭
-            </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                자동 매칭
-            </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                저장
-            </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                계산
-            </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                삭제
-            </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                초기화
-            </button>
-        </div>
         <div style={{display: "flex" , justifyContent: "space-between" , alignItems: "center"}}>
             <h3>산출물</h3>
             <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , width: "70px" , height: "30px"}}
