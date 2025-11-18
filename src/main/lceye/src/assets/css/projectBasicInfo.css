@@ -1,18 +1,23 @@
-.headButton{
+.headButton {
     margin: 0.5rem;
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
+    justify-content: flex-end;
 }
 
-.unitSelectArea{
+.headButton> :nth-child(1) {
+    margin-right: 0.5rem;
+}
+
+.unitSelectArea {
     display: flex;
 }
 
-.unitSelectArea > :nth-child(1), 
-.unitSelectArea > :nth-child(2){
+.unitSelectArea> :nth-child(1),
+.unitSelectArea> :nth-child(2) {
     width: 50%;
 }
 
-.bottomMargin{
+.bottomMargin {
     margin-bottom: 1rem;
 }

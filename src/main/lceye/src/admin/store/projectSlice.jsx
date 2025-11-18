@@ -1,17 +1,21 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    projects: [],
-};  
+    selectedProject: null,
+};
 
 const projectSlice = createSlice({
     name: "project",
-    initialState,   
+    initialState,
     reducers: {
-        // 여기에 프로젝트 관련 리듀서 함수들을 추가할 수 있습니다.
+        setSelectedProject: (state, action) => {
+            state.selectedProject = action.payload;
+        },
+        clearSelectedProject: (state) => {
+            state.selectedProject = null;
+        },
     },
 });
 
-
 export default projectSlice.reducer;
-export const {  } = projectSlice.actions;
+export const { setSelectedProject, clearSelectedProject } = projectSlice.actions;

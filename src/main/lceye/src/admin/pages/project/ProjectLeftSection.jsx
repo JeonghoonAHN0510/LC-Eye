@@ -1,54 +1,71 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useDispatch } from "react-redux";
 import ProjectListTable from "../../components/project/ProjectListTable.jsx";
+import { setSelectedProject } from "../../store/projectSlice.jsx";
 import "../../../assets/css/projectLeftSessionBox.css";
 
 export default function ProjectLeftSection(props) {
-    // [0] 상태관리
+    const dispatch = useDispatch();
+
+    // 프로젝트 목록 상태
     const [projects, setProjects] = useState([]);
 
     useEffect(() => {
-        // 컴포넌트가 마운트될 때 프로젝트 정보를 불러옵니다.
+        // 컴포넌트가 마운트될 때 프로젝트 목록 조회
         readAllProject();
     }, []);
 
-    // [1] 프로젝트 정보 불러오기
+    // 전체 프로젝트 목록 조회
     const readAllProject = async () => {
         try {
-            const r = await axios.get("http://localhost:8080/api/project/all", { withCredentials: true });
-            const d = r.data;
-            console.log(d)
+            const r = await axios.get("http://localhost:8080/api/project/all", {
+                withCredentials: true,
+            });
+            const d = Array.isArray(r.data) ? r.data : [];
             setProjects(d);
         } catch (e) {
-            console.error("[에러발생 readAllproject]" + e);
+            console.error("[readAllProject error]", e);
         }
-    } // func end
+    }; // func end
 
-    // ProjectListTable 테이블 컬럼 정의
-    // id는 데이터 키, title은 헤더 라벨, width는 최소 폭
+    // ProjectListTable 컬럼 정의
     const columns = [
-        { id: "no", title: "No", width: 30 },
-        { id: "pjname", title: "프로젝트명", width: 500 },
-        { id: "pjdesc", title: "프로젝트 설명", width: 150 },
-        { id: "mname", title: "작성자", width: 260 },
-        { id: "createdate", title: "생성일", width: 100 },
+        { id: "pjno", title: "No", width: 60 },
+        { id: "pjname", title: "프로젝트명", width: 260 },
+        { id: "pjdesc", title: "프로젝트 설명", width: 300 },
+        { id: "mname", title: "작성자", width: 120 },
+        { id: "createdate", title: "생성일", width: 160 },
     ];
+
+    // 행 클릭 시 해당 pjno로 상세 조회 후 store에 저장
+    const handleRowClick = async (row) => {
+        const pjno = row?.pjno;
+        if (!pjno) return;
+
+        try {
+            const r = await axios.get(`http://localhost:8080/api/project?pjno=${pjno}`, {
+                withCredentials: true,
+            });
+            dispatch(setSelectedProject(r.data));
+        } catch (e) {
+            console.error("[readProject error]", e);
+        }
+    };
 
     return (
         <>
             <div className="projectLeftSessionBox">
-                <h2>
-                    프로젝트 목록
-                </h2>
+                <h2>프로젝트 목록</h2>
                 <div>
                     <ProjectListTable
                         columns={columns}
                         data={projects}
-                        rememberKey="ProjectListTable"     // 컬럼 너비 로컬 스토리지 키(옵션)
-                        onRowClick={(row) => console.log("row 클릭:", row)}  // 필요 없으면 제거
+                        rememberKey="ProjectListTable"
+                        onRowClick={handleRowClick}
                     />
                 </div>
             </div>
         </>
-    ) // return end
+    ); // return end
 } // func end
