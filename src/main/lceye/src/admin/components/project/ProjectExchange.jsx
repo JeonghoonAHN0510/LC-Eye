@@ -23,7 +23,7 @@ export default function ProjectExchange(props){
     // 매칭 데이터, 모달 상태
     const [openModal, setOpenModal] = useState(false);
     const [matchData, setMatchData] = useState({});
-    const [checkedItems, setCheckedItems] = useState([]);
+    const [checkedItems, setCheckedItems] = useState({});
     const [loading, setLoading] = useState(false); // 매칭 상태
 
     // 투입물 체크박스 선택 상태
@@ -92,59 +92,97 @@ export default function ProjectExchange(props){
         setOutputRows(outputRows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
     };
 
-    // 선택·자동매칭
-    const matchIO = async () => {
-        setLoading(true); // 매칭 시작
+    // 전체 매칭
+    const matchAllIO = async () => {
+        setLoading(true);
+
         const allPjenames = [...inputRows , ...outputRows].map(row => row.pjename);
-        try{
-            const response = await axios.post("http://localhost:8080/api/inout/auto",allPjenames ,  { withCredentials: true })
+
+        if (allPjenames.length === 0 || allPjenames.includes("")) {
+            alert("매칭할 투입물·산출물을 입력해주세요.");
+            setLoading(false);
+            return;
+        }// if end
+
+        await matchIO(allPjenames);
+    }// f end
+
+    // 선택 매칭
+    const matchSelectedIO = async () => {
+        setLoading(true);
+
+        // 선택된 ID 기반으로 행 필터 
+        const selectedInputs = inputRows.filter(r => inputCheckedList.includes(r.id));
+        const selectedOutputs = outputRows.filter(r => outputCheckedList.includes(r.id));
+
+        const selected = [...selectedInputs, ...selectedOutputs];
+
+        if (selected.length === 0) {
+            alert("선택된 항목이 없습니다.");
+            setLoading(false);
+            return;
+        }// if end
+
+        const pjenames = selected.map(s => s.pjename);
+
+        if (pjenames.includes("")) {
+            alert("선택된 항목 중 이름이 비어 있습니다.");
+            setLoading(false);
+            return;
+        }// if end
+
+        await matchIO(pjenames);
+    }// f end
+
+    // 공통 매칭 요청
+    const matchIO = async (pjenames) => {
+        try {
+            const response = await axios.post(
+                "http://localhost:8080/api/inout/auto",
+                pjenames,
+                { withCredentials: true }
+            );
+
             const data = response.data;
+
             if (data && typeof data === "object" && !Array.isArray(data)) {
                 const formattedData = Object.entries(data).map(([key, value]) => ({ key, value }));
                 setMatchData(formattedData);
-                setCheckedItems([]); // 초기화
+                setCheckedItems({});
                 setOpenModal(true);
-            }else if(Array.isArray(data)){
+            } else if (Array.isArray(data)) {
                 setMatchData(data);
-            }else{
+            } else {
                 setMatchData([]);
             }// if end
-        }catch(e){
+        } catch (e) {
             console.log(e);
         } finally {
-            setLoading(false); // 매칭 완료
+            setLoading(false);
         }// try end
     }// f end
 
     // 모달 체크/해제 함수
     const handleCheckValue = (key, value) => {
-        setCheckedItems(prev => {
-            const prevValues = prev[key] || [];
-            if (prevValues.includes(value)) {
-                return { ...prev, [key]: prevValues.filter(v => v !== value) };
-            } else {
-                return { ...prev, [key]: [...prevValues, value] };
-            }// if end
-        });
-    }// f end
+        setCheckedItems(prev => ({
+            ...prev,
+            [key]: value    
+        }));
+    };
 
 
     // 선택한 프로세스 행에 추가
     const handleSaveMatch = () => {
         // 각 키마다 체크한 값 배열 가져오기
-        Object.entries(checkedItems).forEach(([key, values]) => {
+        Object.entries(checkedItems).forEach(([key, value]) => {
             setInputRows(prev =>
                 prev.map(row =>
-                    row.pjename === key
-                    ? { ...row, pname: values.join(", ") } 
-                    : row
+                    row.pjename === key ? { ...row, pname: value } : row
                 )
             );
             setOutputRows(prev =>
                 prev.map(row =>
-                    row.pjename === key
-                    ? { ...row, pname: values.join(", ") }
-                    : row
+                    row.pjename === key ? { ...row, pname: value } : row
                 )
             );
         });
@@ -269,7 +307,7 @@ export default function ProjectExchange(props){
                         {item.value.map(val => (
                             <Box key={val} sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                             <Checkbox
-                                checked={checkedItems[item.key]?.includes(val) || false}
+                                checked={checkedItems[item.key] === val}
                                 onChange={() => handleCheckValue(item.key, val)}
                             />
                             <Typography level="body2" sx={{ marginLeft: 1 }}>{val}</Typography>
@@ -292,14 +330,14 @@ export default function ProjectExchange(props){
         <div style={{alignItems: "center" , justifyContent: "end" , display: "flex"}}>
             <button
                 style={{ color: "white", backgroundColor: "rgb(17 51 125)", marginLeft: "10px" }}
-                onClick={matchIO}
+                onClick={matchSelectedIO}
                 disabled={loading} 
             >
                 {loading ? "매칭중..." : "선택 매칭"}
             </button>
             <button
                 style={{ color: "white", backgroundColor: "rgb(17 51 125)", marginLeft: "10px" }}
-                onClick={matchIO}
+                onClick={matchAllIO}
                 disabled={loading} 
             >
                 {loading ? "매칭중..." : "전체 매칭"}
@@ -317,7 +355,9 @@ export default function ProjectExchange(props){
             onClick={ handleDelete }>
                 삭제
             </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
+            <button 
+            style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}
+            onClick={clearIOInfo}>
                 초기화
             </button>
         </div>
