@@ -3,3 +3,16 @@
     display: flex;
     flex-direction: row-reverse;
 }
+
+.unitSelectArea{
+    display: flex;
+}
+
+.unitSelectArea > :nth-child(1), 
+.unitSelectArea > :nth-child(2){
+    width: 50%;
+}
+
+.bottomMargin{
+    margin-bottom: 1rem;
+}
