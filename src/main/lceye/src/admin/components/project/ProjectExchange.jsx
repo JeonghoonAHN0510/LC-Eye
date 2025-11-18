@@ -2,7 +2,12 @@ import Table from '@mui/joy/Table';
 import Checkbox from '@mui/joy/Checkbox';
 import { useState } from "react";
 import axios from "axios";
+import Modal from '@mui/joy/Modal'; // Joy UI Modal 예시
+import Sheet from '@mui/joy/Sheet';
+import Typography from '@mui/joy/Typography';
 import { useLocation } from "react-router-dom";
+import Button from '@mui/joy/Button';
+import Box from '@mui/joy/Box';
 
 export default function ProjectExchange(props){
 
@@ -14,6 +19,12 @@ export default function ProjectExchange(props){
     // 행 데이터
     const [inputRows, setInputRows] = useState([{ id : 1 , pjename : "" , pjeamount : "" , uname : "", pname : "" , isInput : true}])
     const [outputRows, setOutputRows] = useState([{ id : 1 , pjename : "" , pjeamount : "" , uname : "", pname : "" , isInput : false }])
+
+    // 매칭 데이터, 모달 상태
+    const [openModal, setOpenModal] = useState(false);
+    const [matchData, setMatchData] = useState({});
+    const [checkedItems, setCheckedItems] = useState([]);
+    const [loading, setLoading] = useState(false); // 매칭 상태
 
     // 투입물 체크박스 선택 상태
     const [inputCheckedList, setInputCheckedList] = useState([]);
@@ -81,10 +92,69 @@ export default function ProjectExchange(props){
         setOutputRows(outputRows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
     };
 
+    // 선택·자동매칭
+    const matchIO = async () => {
+        setLoading(true); // 매칭 시작
+        const allPjenames = [...inputRows , ...outputRows].map(row => row.pjename);
+        try{
+            const response = await axios.post("http://localhost:8080/api/inout/auto",allPjenames ,  { withCredentials: true })
+            const data = response.data;
+            if (data && typeof data === "object" && !Array.isArray(data)) {
+                const formattedData = Object.entries(data).map(([key, value]) => ({ key, value }));
+                setMatchData(formattedData);
+                setCheckedItems([]); // 초기화
+                setOpenModal(true);
+            }else if(Array.isArray(data)){
+                setMatchData(data);
+            }else{
+                setMatchData([]);
+            }// if end
+        }catch(e){
+            console.log(e);
+        } finally {
+            setLoading(false); // 매칭 완료
+        }// try end
+    }// f end
+
+    // 모달 체크/해제 함수
+    const handleCheckValue = (key, value) => {
+        setCheckedItems(prev => {
+            const prevValues = prev[key] || [];
+            if (prevValues.includes(value)) {
+                return { ...prev, [key]: prevValues.filter(v => v !== value) };
+            } else {
+                return { ...prev, [key]: [...prevValues, value] };
+            }// if end
+        });
+    }// f end
+
+
+    // 선택한 프로세스 행에 추가
+    const handleSaveMatch = () => {
+        // 각 키마다 체크한 값 배열 가져오기
+        Object.entries(checkedItems).forEach(([key, values]) => {
+            setInputRows(prev =>
+                prev.map(row =>
+                    row.pjename === key
+                    ? { ...row, pname: values.join(", ") } 
+                    : row
+                )
+            );
+            setOutputRows(prev =>
+                prev.map(row =>
+                    row.pjename === key
+                    ? { ...row, pname: values.join(", ") }
+                    : row
+                )
+            );
+        });
+        setOpenModal(false);
+    };
+
     // 초기화
     const clearIOInfo = async () => {
         try{
-            const response = await axios.delete(`http://localhost:8080/api/inout?pjno=${pjno}`);
+            const response = await axios.delete(`http://localhost:8080/api/inout?pjno=${pjno}`,  { withCredentials: true });
             const data = response.data;
             if(data){
                 alert("초기화 되었습니다.");
@@ -137,7 +207,7 @@ export default function ProjectExchange(props){
             exchanges : [...inputRows , ...outputRows]
         };
         try{
-            const response = await axios.post("http://localhost:8080/api/inout",obj);
+            const response = await axios.post("http://localhost:8080/api/inout",obj ,  { withCredentials: true });
             const data = response.data;
             if(data){
                 alert('저장 성공');
@@ -151,14 +221,92 @@ export default function ProjectExchange(props){
 
     return(
         <>
+        <Modal
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+            >
+            <Sheet
+                sx={{
+                padding: 2,
+                width: 450,
+                maxHeight: "70vh", 
+                overflowY: "auto",  
+                border: "2px solid #334080", 
+                borderRadius: 2,
+                backgroundColor: "#fff",
+                boxShadow: "0px 4px 16px rgba(0,0,0,0.2)",
+                }}
+                >
+                <Typography level="h6" sx={{ marginBottom: 2, textAlign: "center" }}>
+                    매칭 결과
+                </Typography>
+                {Array.isArray(matchData) && matchData.map(item => (
+                    <Box
+                        key={item.key}
+                        sx={{
+                        borderBottom: "1px solid #ccc", // 키 단위 구분선
+                        marginBottom: 2,
+                        paddingBottom: 1
+                        }}
+                    >
+                        <Typography level="body1" sx={{ fontWeight: "bold" }}>{item.key}</Typography>
+
+                        <Box
+                        sx={{
+                            marginTop: 1,
+                            maxHeight: item.value.length > 3 ? 100 : "auto", // 값이 3개 이상이면 스크롤
+                            overflowY: item.value.length > 3 ? "auto" : "visible",
+                            border: item.value.length > 3 ? "1px solid #ddd" : "none",
+                            padding: 1,
+                            borderRadius: 1
+                        }}
+                        >
+                        {item.value.map(val => (
+                            <Box key={val} sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                            <Checkbox
+                                checked={checkedItems[item.key]?.includes(val) || false}
+                                onChange={() => handleCheckValue(item.key, val)}
+                            />
+                            <Typography level="body2" sx={{ marginLeft: 1 }}>{val}</Typography>
+                            </Box>
+                        ))}
+                        </Box>
+                    </Box>
+                    ))}
+
+                    <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+                    <Button variant="solid" color="primary" onClick={handleSaveMatch}>
+                        저장
+                    </Button>
+                    <Button variant="outlined" color="neutral" onClick={() => setOpenModal(false)}>
+                        닫기
+                    </Button>
+                    </Box>
+                </Sheet>
+        </Modal>
         <div style={{alignItems: "center" , justifyContent: "end" , display: "flex"}}>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                선택 매칭
+            <button
+                style={{ color: "white", backgroundColor: "rgb(17 51 125)", marginLeft: "10px" }}
+                onClick={matchIO}
+                disabled={loading} 
+            >
+                {loading ? "매칭중..." : "선택 매칭"}
             </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
-                자동 매칭
+            <button
+                style={{ color: "white", backgroundColor: "rgb(17 51 125)", marginLeft: "10px" }}
+                onClick={matchIO}
+                disabled={loading} 
+            >
+                {loading ? "매칭중..." : "전체 매칭"}
             </button>
-            <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
+            <button 
+            style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}
+            onClick={ saveIOInfo }>
                 저장
             </button>
             <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
@@ -166,7 +314,7 @@ export default function ProjectExchange(props){
             </button>
             <button 
             style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}
-            onClick={() => { handleDelete(); }}>
+            onClick={ handleDelete }>
                 삭제
             </button>
             <button style={{ color: "white", backgroundColor: "rgb(17 51 125)" , marginLeft: "10px"}}>
