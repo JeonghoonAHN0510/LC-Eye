@@ -2,10 +2,15 @@ package lceye.service;
 
 import lceye.model.dto.CalculateResultDto;
 import lceye.model.entity.ProjectEntity;
+import lceye.model.entity.ProjectResultFileEntity;
 import lceye.model.repository.ProjectRepository;
+import lceye.model.repository.ProjectResultFileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,18 +23,19 @@ public class LCICalculateService {
 
     private final ProjectRepository projectRepository;
     private final FileService fileService;
+    private final ProjectResultFileRepository projectResultFileRepository;
 
     /**
      * [LCI-01] LCI 계산하기
      */
-    public boolean calcLCI(int pjno){
+    public boolean calcLCI(int pjno) {
         // [1] pjno를 기반으로 projectExchange json 파일명을 찾음
         ProjectEntity projectEntity = projectRepository.getReferenceById(pjno);
         String projectExchangeFileName = projectEntity.getPjfilename();
         // [2] projectExchangeFileName 의 json 파일을 찾음 + 읽음 // json 파일 읽힘 확인
-        Map<String,Object> readFileData = fileService.readFile("exchange",projectExchangeFileName);
+        Map<String, Object> readFileData = fileService.readFile("exchange", projectExchangeFileName);
         // [3] processExchanges 를 리스트로 꺼냄
-        List<Map<String,Object>> processExchanges = (List<Map<String, Object>>) readFileData.get("exchanges");
+        List<Map<String, Object>> processExchanges = (List<Map<String, Object>>) readFileData.get("exchanges");
         double pjamount = (double) readFileData.get("pjamount");
 
         // [4] flow 결과를 누적할 Map (key: fno_isInput_uno)
@@ -40,13 +46,13 @@ public class LCICalculateService {
         Map<String, Object> productExchange = null;
 
         // [5] exchange 를 1개씩 꺼내서 처리
-        for(Map<String, Object> processExchange: processExchanges){
-            
+        for (Map<String, Object> processExchange : processExchanges) {
+
             // [5.1] exchnage(process)의 uuid와 input 여부 꺼내기
             Object puuidObj = processExchange.get("puuid");
             Boolean isInput = (Boolean) processExchange.get("isInput");
 
-            if(puuidObj != null){ // exchange = 프로세스
+            if (puuidObj != null) { // exchange = 프로세스
                 // [6.1] puuis String으로 파싱, 해당 프로세스의 투입/산출양 확인
                 String searchPuuid = String.valueOf(puuidObj);
                 double pjeAmount = (double) processExchange.get("pjeamount");
@@ -90,15 +96,19 @@ public class LCICalculateService {
         String resultFileName = makeResultFileName(projectEntity); // cno_pjno_result_yyyyMMdd_HHmm.json
         // [11] 파일 저장하기 ( type, 파일명 ,JSON으로 변환할 데이터)
         fileService.writeFile("result", resultFileName, resultJson);
-        return true;
-    } // func end
 
-    /**
-     * [LCI-02] LCI 결과 개별 조회
-     */
-    public List<CalculateResultDto> readLCI(int pjno){
-      // todo OngTK readLCI 구현 필요
-        return null;
+        // [12] resultfile 매핑 테이블 결과 저장
+        ProjectResultFileEntity projectResultFileEntity = ProjectResultFileEntity.builder()
+                .prfname(resultFileName)
+                .projectEntity(projectEntity)
+                .build();
+        projectResultFileRepository.save(projectResultFileEntity);
+        // [13] 결과 반환
+        if (projectResultFileEntity.getPrfno() > 0) {
+            return true;
+        } else {
+            return false;
+        }
     } // func end
 
     /**
@@ -107,8 +117,9 @@ public class LCICalculateService {
      * LCI 결과 시 매번 process 정보를 가져오는 것은 시간적으로, 물리적으로 비효율적
      * <p>
      * 한 번 읽은 process는 캐시화하여 재조회 시 속도를 증가
+     *
      * @param processCache process 처리 이력에 대한 캐쉬
-     * @param puuid 프로세스uuid
+     * @param puuid        프로세스uuid
      * @return 저장되어 있는 process 정보
      * @author OngTK
      */
@@ -137,6 +148,7 @@ public class LCICalculateService {
      * [clac_LCI-6.4] flow 누적 계산용 및 Map처리 함수
      * <p>
      * 각 flow에 대해 pjeAmount × amount(flow) 계산 후, resultMap에 누적
+     *
      * @author OngTK
      */
     private void accumulateFlow(
@@ -186,11 +198,12 @@ public class LCICalculateService {
      * 대상제품의 경우 puuid가 없는 특수한 대상
      * <p>
      * 다만 dto에 기본타입을 적용하여서 int에 null 처리가 불가하여 별도의 func을 통해 일부 항목에 대한 대체 처리를 위한 함수
-     * @author OngTK
-     * @param project 프로젝트 정보를 담은 엔티티
+     *
+     * @param project             프로젝트 정보를 담은 엔티티
      * @param projectExchangeJson 프로젝트 입출력 JSON 파일
-     * @param productExchange fuuid가 없고 isInput이 null인 대상 = 생산 제품
-     * @param pjamount 프로젝트 산출량 = 제품 생산량
+     * @param productExchange     fuuid가 없고 isInput이 null인 대상 = 생산 제품
+     * @param pjamount            프로젝트 산출량 = 제품 생산량
+     * @author OngTK
      */
     @SuppressWarnings("unchecked")
     private CalculateResultDto buildProductResultDto(
@@ -226,9 +239,10 @@ public class LCICalculateService {
 
     /**
      * [calcLCI-9] 결과 JSON 만들기
-     * @param project 프로젝트 정보를 담는 엔티티
+     *
+     * @param project             프로젝트 정보를 담는 엔티티
      * @param projectExchangeJson 프로젝트 투입·산출물 정보 JSON
-     * @param results LCI 계산 결과에 해당하는 flow 리스트
+     * @param results             LCI 계산 결과에 해당하는 flow 리스트
      * @return Map<String, Object> JSON으로 바꾸기 직전의 최종 형태
      * @author OngTK
      */
@@ -282,6 +296,7 @@ public class LCICalculateService {
 
     /**
      * [calcLCI-10] 파일명 만들기
+     *
      * @param project 프로젝트 정보를 담는 엔티티
      * @return filename 확장자(json)을 제외한 파일명(cno_pjno_result_yyyyMMdd_HHmm.json)
      * @author OngTK
@@ -291,6 +306,18 @@ public class LCICalculateService {
         int pjno = project.getPjno();
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
         return cno + "_" + pjno + "_result_" + now;
+    } // func end
+
+    /**
+     * [LCI-02] LCI 결과 조회하기
+     * @author OngTK
+     */
+    public Map<String, Object> readLCI( int pjno ){
+        // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
+        String fileName = projectResultFileRepository.returnFilename(pjno);
+        if(fileName.isBlank()) return null;
+        // [2] 파일명으로 파일 찾아오기
+        return fileService.readFile("result",fileName);
     } // func end
 
 } // class end

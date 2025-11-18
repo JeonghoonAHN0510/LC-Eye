@@ -3,10 +3,7 @@ package lceye.controller;
 import lceye.service.LCICalculateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/lci")
@@ -35,8 +32,7 @@ public class LCICalculateController {
      */
     @GetMapping
     public ResponseEntity<?> readLCI(@RequestParam int pjno){
-        // todo OngTK readLCI 구현 필요
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(lciCalculateService.readLCI(pjno));
     } // func end
 
 } // class end
