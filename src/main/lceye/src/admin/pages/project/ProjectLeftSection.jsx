@@ -50,7 +50,7 @@ export default function ProjectLeftSection(props) {
 
     // ProjectListTable 컬럼 정의 ==============================================
     const columns = [
-        { id: "pjno", title: "No", width: 100 },
+        { id: "pjno", title: "No", width: 60 },
         { id: "pjname", title: "프로젝트명", width: 100 },
         { id: "pjdesc", title: "프로젝트 설명", width: 100 },
         { id: "mname", title: "작성자", width: 100 },

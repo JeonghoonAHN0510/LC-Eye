@@ -8,7 +8,6 @@
 }
 
 
-
 /* 프로젝트 목록 테이블 - 설명 컬럼 최대 200px + 말줄임표 */
 .projectLeftSessionBox .rzTable col:nth-child(3) {
     width: 200px;

@@ -152,12 +152,11 @@ export default function ProjectBasicInfo(props) {
 
         const amountNumber = Number(form.pjamount);
         if (!form.pjamount || Number.isNaN(amountNumber) || amountNumber <= 0) {
-            nextErrors.pjamount =
-                "제품 예산액을 0보다 큰 숫자로 입력해 주세요.";
+            nextErrors.pjamount = "제품 생산량을 0보다 큰 숫자로 입력해 주세요.";
         }
 
         if (!form.uno) {
-            nextErrors.uno = "세부 단위를 선택해 주세요.";
+            nextErrors.uno = "상세 단위를 선택해 주세요.";
         }
 
         const hasError = Object.values(nextErrors).some((msg) => !!msg);
@@ -311,7 +310,7 @@ export default function ProjectBasicInfo(props) {
                     error={!!errors.pjamount}
                 >
                     <FormLabel className="projectLabel">
-                        제품 예산액
+                        대상 제품 생산량
                     </FormLabel>
                     <Input
                         type="number"
@@ -336,10 +335,10 @@ export default function ProjectBasicInfo(props) {
                 <div className="unitSelectArea bottomMargin">
                     <FormControl>
                         <FormLabel className="projectLabel">
-                            부서 그룹
+                            단위 그룹
                         </FormLabel>
                         <Select
-                            placeholder="부서 그룹 선택"
+                            placeholder="단위 그룹 선택"
                             value={selectedGroup}
                             onChange={(event, newValue) => {
                                 dispatch(setBasicInfoDirty(true));
@@ -366,9 +365,9 @@ export default function ProjectBasicInfo(props) {
                     </FormControl>
 
                     <FormControl error={!!errors.uno}>
-                        <FormLabel className="projectLabel">세부 단위</FormLabel>
+                        <FormLabel className="projectLabel">상세 단위</FormLabel>
                         <Select
-                            placeholder="세부 단위 선택"
+                            placeholder="상세 단위 선택"
                             value={selectedUnitUno}
                             onChange={(event, newValue) => {
                                 dispatch(setBasicInfoDirty(true));
@@ -418,7 +417,7 @@ export default function ProjectBasicInfo(props) {
 
                 </div>
                 <FormHelperText>
-                    최초 등록/수정일이 자동으로 입력되며, 수정할 수정할 수 없습니다.
+                    ※최초 등록/수정일이 자동으로 입력되며, 수정할 수정할 수 없습니다.
                 </FormHelperText>
             </div>
         </>
