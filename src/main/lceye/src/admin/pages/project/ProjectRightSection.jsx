@@ -11,9 +11,6 @@ export default function ProjectRightSection(props) {
         <>
             <div className="projectRigthTop">
                 <div className="projectNameBox">프로젝트명</div>
-                <div>
-                    <button>저장</button>
-                </div>
             </div>
             <div className="projectRightBot">
                 <AccordionGroup
