@@ -50,11 +50,11 @@ export default function ProjectLeftSection(props) {
 
     // ProjectListTable 컬럼 정의 ==============================================
     const columns = [
-        { id: "pjno", title: "No", width: 60 },
-        { id: "pjname", title: "프로젝트명", width: 260 },
-        { id: "pjdesc", title: "프로젝트 설명", width: 300 },
-        { id: "mname", title: "작성자", width: 120 },
-        { id: "createdate", title: "작성일", width: 160 },
+        { id: "pjno", title: "No", width: 100 },
+        { id: "pjname", title: "프로젝트명", width: 100 },
+        { id: "pjdesc", title: "프로젝트 설명", width: 100 },
+        { id: "mname", title: "작성자", width: 100 },
+        { id: "createdate", title: "작성일", width: 100 },
     ];
 
     // 행 클릭 시 해당 pjno 로 상세 조회 후 store 에 저장 ======================
@@ -78,9 +78,9 @@ export default function ProjectLeftSection(props) {
     // return ==================================================================
     return (
         <>
-            <div className="projectLeftSessionBox">
-                <h2>프로젝트 목록</h2>
-                <div>
+            <div>
+                <div className="projectListNameBox">프로젝트 목록</div>
+                <div className="projectListBox">
                     <ProjectListTable
                         columns={columns}
                         data={projects}
