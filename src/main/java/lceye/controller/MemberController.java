@@ -51,6 +51,29 @@ public class MemberController {
     } // func end
 
     /**
+     * [MB-01] 플러터 로그인(login)
+     * <p>
+     * [아이디, 비밀번호]를 받아서 DB에 일치하는 회원이 존재한다면, Redis에 로그인 정보가 담긴 JWT 토큰을 저장한다.
+     * <p>
+     * 테스트 : {"mid":"admin", "mpwd":"1234"}
+     * @param memberDto 아이디, 비밀번호가 담긴 Dto
+     * @return 로그인을 성공한 회원의 Dto
+     * @author AhnJH
+     */
+    @PostMapping("/flutter/login")
+    public ResponseEntity<?> flutterLogin(@RequestBody MemberDto memberDto){
+        // 1. 입력받은 값을 Service에 전달하여 로그인 진행
+        MemberDto result = memberService.login(memberDto);
+        // 2. 로그인을 성공했다면
+        if (result != null){
+            return ResponseEntity.ok(result);
+        } // if end
+        // 6. 최종적으로 결과 반환
+        return ResponseEntity.status(400).body(null);
+    } // func end
+
+
+    /**
      * [MB-02] 로그아웃(logout)
      * <p>
      * 요청한 회원의 로그인 정보를 Redis와 Cookie에서 제거한다.
@@ -73,6 +96,24 @@ public class MemberController {
         response.addCookie(cookie);
         // 4. Redis에 저장된 쿠키 삭제 진행 후 반환
         return ResponseEntity.ok(memberService.logout(token));
+    } // func end
+
+    /**
+     * [MB-02] 플러터 로그아웃(logout)
+     * <p>
+     * 요청한 회원의 로그인 정보를 Redis에서 제거한다.
+     * @param authorizationHeader 요청한 회원의 token 정보
+     * @return 로그아웃 성공 여부 - boolean
+     * @author AhnJH
+     */
+    @PostMapping("/flutter/logout")
+    public ResponseEntity<?> flutterLogout(@RequestHeader("Authorization") String authorizationHeader){
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            // 4. Redis에 저장된 쿠키 삭제 진행 후 반환
+            return ResponseEntity.ok(memberService.logout(token));
+        }
+        return ResponseEntity.status(401).body(false);
     } // func end
 
     /**
