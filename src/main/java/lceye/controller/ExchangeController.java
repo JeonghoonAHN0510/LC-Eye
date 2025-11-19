@@ -37,6 +37,7 @@ public class ExchangeController {
     @PostMapping
     public ResponseEntity<?> saveIOInfo(@CookieValue(value = "loginMember", required = false) String token,
                                         @RequestBody Map<String,Object> map){
+        System.out.println("map : " + map);
         return ResponseEntity.ok(exchangeService.saveInfo(map,token));
     }// func end
 
@@ -51,9 +52,10 @@ public class ExchangeController {
     @PostMapping("/auto")
     public ResponseEntity<?> matchIO(@CookieValue(value = "loginMember", required = false) String token,
                                      @RequestBody List<String> inputList){
-        System.out.println("token = " + token + ", inputList = " + inputList);
         Map<String,Object> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
+        System.out.println("pjnoMap = " + pjnoMap);
         Map<String,Object> cnoMap = exchangeService.autoMatchCno(inputList,token);
+        System.out.println("cnoMap = " + cnoMap);
         if (pjnoMap != null && !pjnoMap.isEmpty()){
             return ResponseEntity.ok(pjnoMap);
         } else if (cnoMap != null && !cnoMap.isEmpty()) {
