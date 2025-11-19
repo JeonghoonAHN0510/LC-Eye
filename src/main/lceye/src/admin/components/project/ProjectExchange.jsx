@@ -309,8 +309,8 @@ export default function ProjectExchange(props){
                             borderRadius: 1
                         }}
                         >
-                        {item.value.map(val => (
-                            <Box key={val} sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                        {item.value.map((val,index) => (
+                            <Box key={index} sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                             <Checkbox
                                 checked={checkedItems[item.key] === val}
                                 onChange={() => handleCheckValue(item.key, val)}

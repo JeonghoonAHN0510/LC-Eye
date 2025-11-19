@@ -104,32 +104,31 @@ public class ExchangeService {
     public Map<String,Object> autoMatchCno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int cno = jwtService.getCnoFromClaims(token);
-        System.out.println("clientInput = " + clientInput + ", token = " + token);
+        List<String> companyFileNames = projectService.findByCno(cno);
         Set<String> inputSet = new HashSet<>(clientInput);
-        Map<String, List<String>> requestMap = new HashMap<>();
-        String companyNumber = String.valueOf(cno);
-        List<Map<String, Object>> list = fileService.filterFile(companyNumber);
-        for (Map<String, Object> map : list) {
-            Object obj = map.get("exchanges");
-            if (obj instanceof List<?> rawList) {
-                for (Object exchangeObj : rawList) {
-                    if (exchangeObj instanceof Map exchange) {
-                        Object pjeNameObj = exchange.get("pjename");
-                        Object pNameObj = exchange.get("pname");
+        Map<String, Set<String>> requestMap = new HashMap<>();
+        for (String company : companyFileNames){
+            List<Map<String, Object>> list = fileService.filterFile(company);
+            for (Map<String, Object> map : list) {
+                Object obj = map.get("exchanges");
+                if (obj instanceof List<?> rawList) {
+                    for (Object exchangeObj : rawList) {
+                        if (exchangeObj instanceof Map exchange) {
+                            Object pjeNameObj = exchange.get("pjename");
+                            Object pNameObj = exchange.get("pname");
 
-                        // pjeName이 String 타입이고, Set에 포함되는지 확인
-                        if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
-                            String pName = pNameObj != null ? pNameObj.toString() : "N/A";
-                            // 매칭된 결과를 해당 Key의 리스트에 추가 (덮어쓰기 방지)
-                            requestMap.computeIfAbsent(pjeName, k -> new ArrayList<>()).add(pName);
+                            // pjeName이 String 타입이고, Set에 포함되는지 확인
+                            if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
+                                String pName = pNameObj != null ? pNameObj.toString() : "N/A";
+                                // 매칭된 결과를 해당 Key의 리스트에 추가 (덮어쓰기 방지)
+                                requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
+                            }// if end
                         }// if end
-                    }// if end
-                }// for end
-            }// if end
+                    }// for end
+                }// if end
+            }// for end
         }// for end
-
         // 최종 반환 타입인 Map<String, Object>에 맞게 리턴
-        System.out.println("requestMap: " + requestMap);
         return new HashMap<>(requestMap);
     }// func end
 
@@ -144,18 +143,20 @@ public class ExchangeService {
     public Map<String,Object> autoMatchPjno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int mno = jwtService.getMnoFromClaims(token);
-        System.out.println("clientInput = " + clientInput + ", token = " + token);
         List<ProjectDto> projectDtos = projectService.findByMno(mno);
         Set<String> inputSet = new HashSet<>(clientInput);
-        Map<String, List<String>> requestMap = new HashMap<>();
+        Map<String, Set<String>> requestMap = new HashMap<>();
         List<String> pjnoList = projectDtos.stream().map(ProjectDto::getPjfilename).toList();
         for (String fileName : pjnoList) {
             List<Map<String, Object>> list = fileService.filterFile(fileName);
+            System.out.println("list = " + list);
             for (Map<String, Object> map : list) {
                 Object obj = map.get("exchanges");
+                System.out.println("obj = " + obj);
                 if (obj instanceof List<?> rawList) {
                     for (Object exchangeObj : rawList) {
                         if (exchangeObj instanceof Map exchange) {
+                            System.out.println("exchange = " + exchange);
                             Object pjeNameObj = exchange.get("pjename");
                             Object pNameObj = exchange.get("pname");
 
@@ -164,7 +165,7 @@ public class ExchangeService {
                                 String pName = pNameObj != null ? pNameObj.toString() : "N/A";
 
                                 // 매칭된 결과를 리스트에 추가 (덮어쓰기 방지)
-                                requestMap.computeIfAbsent(pjeName, k -> new ArrayList<>()).add(pName);
+                                requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
                             }// if end
                         }// if end
                     }// for end
