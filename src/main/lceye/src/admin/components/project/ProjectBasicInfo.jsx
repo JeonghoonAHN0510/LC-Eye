@@ -417,7 +417,7 @@ export default function ProjectBasicInfo(props) {
 
                 </div>
                 <FormHelperText>
-                    ※최초 등록/수정일이 자동으로 입력되며, 수정할 수정할 수 없습니다.
+                    ※ 등록일/수정일이 자동으로 입력되며, 수정할 수정할 수 없습니다.
                 </FormHelperText>
             </div>
         </>

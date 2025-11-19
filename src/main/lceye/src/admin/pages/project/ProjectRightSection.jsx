@@ -12,6 +12,9 @@ export default function ProjectRightSection(props) {
     const basicInfoStatus = useSelector(
         (state) => state.project?.basicInfoStatus
     );
+    const selectedProject = useSelector(
+        (state) => state.project?.selectedProject
+    );
 
     const canOpenSubAccordions =
         !!basicInfoStatus &&
@@ -80,7 +83,10 @@ export default function ProjectRightSection(props) {
                             <div className="sectionName">LCI 결과</div>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <ProjectResult />
+                            <ProjectResult
+                                pjno={selectedProject?.pjno}
+                                isOpen={resultOpen}
+                            />
                         </AccordionDetails>
                     </Accordion>
                 </AccordionGroup>
@@ -88,4 +94,3 @@ export default function ProjectRightSection(props) {
         </>
     ); // return end
 } // func end
-
