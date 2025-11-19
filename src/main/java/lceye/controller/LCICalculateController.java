@@ -22,7 +22,6 @@ public class LCICalculateController {
      */
     @GetMapping("/calc")
     public ResponseEntity<?> calcLCI(@RequestParam int pjno){
-        // todo OngTK calcLCI 구현 필요
         return ResponseEntity.ok(lciCalculateService.calcLCI(pjno));
     } // func end
 
@@ -33,6 +32,15 @@ public class LCICalculateController {
     @GetMapping
     public ResponseEntity<?> readLCI(@RequestParam int pjno){
         return ResponseEntity.ok(lciCalculateService.readLCI(pjno));
+    } // func end
+
+    /**
+     * [LCI-03] LCI 결과 존재 여부 확인
+     * @author OngTK
+     */
+    @GetMapping("/id")
+    public ResponseEntity<?> checkLCI(@RequestParam int pjno){
+        return ResponseEntity.ok(lciCalculateService.checkLCI(pjno));
     } // func end
 
 } // class end

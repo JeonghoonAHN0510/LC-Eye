@@ -316,4 +316,17 @@ public class LCICalculateService {
         return fileService.readFile("result",fileName);
     } // func end
 
+    /**
+     * [LCI-03] LCI 결과 존재 여부 확인
+     * @author OngTK
+     */
+    public String checkLCI(int pjno){
+        // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
+        String fileName = projectResultFileRepository.returnFilename(pjno);
+        // [2] 조회 되는게 없으면 null 반환
+        if(fileName.isBlank()) return null;
+        // [3] 조회된 String을 반환
+        return fileName;
+    } // func end
+
 } // class end
