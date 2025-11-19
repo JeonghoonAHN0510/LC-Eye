@@ -66,7 +66,7 @@ public class MemberController {
         MemberDto result = memberService.login(memberDto);
         // 2. 로그인을 성공했다면
         if (result != null){
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(result.getToken());
         } // if end
         // 6. 최종적으로 결과 반환
         return ResponseEntity.status(400).body(null);
@@ -137,6 +137,27 @@ public class MemberController {
                 return ResponseEntity.status(200).body(infoByToken);
             } // if end
         } // if end
+        // 5. 비로그인 상태라면
+        Map<String, Object> result = new HashMap<>();          // infoByToken이 null일 수 있기에, 재정의 해주기
+        // 6. 비로그인을 표시하고
+        result.put("isAuth", false);
+        // 7. HTTP 403으로 반환
+        return ResponseEntity.status(403).body(result);
+    } // func end
+
+    @GetMapping("/flutter/getinfo")
+    public ResponseEntity<?> flutterGetInfo(@RequestHeader("Authorization") String header){
+        if (header != null && header.startsWith("Bearer ")){
+            String token = header.substring(7);
+            Map<String, Object> infoByToken = memberService.getInfo(token);
+            // 2. 해당 토큰이 유효하여 정보 추출에 성공했다면
+            if (infoByToken != null){
+                // 3. 로그인여부를 표시하고
+                infoByToken.put("isAuth", true);
+                // 4. HTTP 200으로 반환
+                return ResponseEntity.status(200).body(infoByToken);
+            } // if end
+        }
         // 5. 비로그인 상태라면
         Map<String, Object> result = new HashMap<>();          // infoByToken이 null일 수 있기에, 재정의 해주기
         // 6. 비로그인을 표시하고
