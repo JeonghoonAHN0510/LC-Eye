@@ -4,6 +4,7 @@ import lceye.model.dto.ProjectDto;
 import lceye.model.entity.MemberEntity;
 import lceye.model.entity.ProjectEntity;
 import lceye.model.entity.UnitsEntity;
+import lceye.model.mapper.ProjectMapper;
 import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.UnitsRepository;
@@ -22,6 +23,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final MemberRepository memberRepository;
     private final UnitsRepository unitsRepository ;
+    private final ProjectMapper projectMapper;
     /**
      * [PJ-01] 프로젝트 등록
      */
@@ -73,6 +75,17 @@ public class ProjectService {
             return entity.toDto();
         }// if end
         return null;
+    }// func end
+
+    /**
+     * 회사번호로 프로젝트파일명 조회
+     *
+     * @param cno 회사번호
+     * @return 파일명 리스트
+     * @author 민성호
+     */
+    public List<String> findByCno(int cno){
+        return projectMapper.findByCno(cno);
     }// func end
 
     /**
