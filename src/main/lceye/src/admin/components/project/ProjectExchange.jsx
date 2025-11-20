@@ -6,8 +6,11 @@ import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
 import Box from "@mui/joy/Box";
+import Select from "@mui/joy/Select";
+import Option from "@mui/joy/Option";
 import { useSelector } from "react-redux";
 import ProjectListTable from "./ProjectListTable.jsx";
+import useUnits from "../../hooks/useUnits";
 import "../../../assets/css/ProjectExchange.css";
 
 export default function ProjectExchange(props) {
@@ -17,6 +20,7 @@ export default function ProjectExchange(props) {
         (state) => state.project?.selectedProject
     );
     const effectivePjno = pjno ?? selectedProject?.pjno ?? null;
+    const { units } = useUnits();
 
     const createInitialInputRows = () => [
         {
@@ -24,6 +28,7 @@ export default function ProjectExchange(props) {
             pjename: "",
             pjeamount: "",
             uname: "",
+            uno: null,
             pname: "",
             isInput: true,
         },
@@ -35,6 +40,7 @@ export default function ProjectExchange(props) {
             pjename: "",
             pjeamount: "",
             uname: "",
+            uno: null,
             pname: "",
             isInput: false,
         },
@@ -55,6 +61,11 @@ export default function ProjectExchange(props) {
         inputRows.length > 0 && inputCheckedList.length === inputRows.length;
     const outputChecked =
         outputRows.length > 0 && outputCheckedList.length === outputRows.length;
+    const unitOptions = units.map((u) => ({
+        value: u.uno,
+        label: u.unit,
+        group: u.ugname,
+    }));
 
     const handleCheckAllInput = (checked) => {
         if (checked) {
@@ -84,6 +95,21 @@ export default function ProjectExchange(props) {
         );
     };
 
+    const applyUnitToRow = (isInput, rowId, newUno) => {
+        const picked = units.find((u) => u.uno === newUno);
+        const updater = (prev) =>
+            prev.map((row) =>
+                row.id === rowId
+                    ? {
+                        ...row,
+                        uno: newUno,
+                        uname: picked?.unit ?? "",
+                    }
+                    : row
+            );
+        (isInput ? setInputRows : setOutputRows)(updater);
+    };
+
     const addInputRow = () => {
         const newId =
             inputRows.length > 0
@@ -96,6 +122,7 @@ export default function ProjectExchange(props) {
                 pjename: "",
                 pjeamount: "",
                 uname: "",
+                uno: null,
                 pname: "",
                 isInput: true,
             },
@@ -114,6 +141,7 @@ export default function ProjectExchange(props) {
                 pjename: "",
                 pjeamount: "",
                 uname: "",
+                uno: null,
                 pname: "",
                 isInput: false,
             },
@@ -332,12 +360,16 @@ export default function ProjectExchange(props) {
             const outputList = Array.isArray(res?.data?.outputList)
                 ? res.data.outputList
                 : [];
+            const unitNameToUno = new Map(
+                units.map((u) => [u.unit, u.uno])
+            );
 
             const mappedInput = inputList.map((item, index) => ({
                 id: index + 1,
                 pjename: item.pjename ?? "",
                 pjeamount: item.pjeamount ?? "",
                 uname: item.uname ?? "",
+                uno: unitNameToUno.get(item.uname ?? "") ?? null,
                 pname: item.pname ?? "",
                 isInput: item.isInput ?? true,
             }));
@@ -347,6 +379,7 @@ export default function ProjectExchange(props) {
                 pjename: item.pjename ?? "",
                 pjeamount: item.pjeamount ?? "",
                 uname: item.uname ?? "",
+                uno: unitNameToUno.get(item.uname ?? "") ?? null,
                 pname: item.pname ?? "",
                 isInput: item.isInput ?? false,
             }));
@@ -376,6 +409,26 @@ export default function ProjectExchange(props) {
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (!units.length) return;
+        const map = new Map(units.map((u) => [u.unit, u.uno]));
+        setInputRows((prev) =>
+            prev.map((row) =>
+                row.uno || !row.uname || !map.has(row.uname)
+                    ? row
+                    : { ...row, uno: map.get(row.uname) }
+            )
+        );
+        setOutputRows((prev) =>
+            prev.map((row) =>
+                row.uno || !row.uname || !map.has(row.uname)
+                    ? row
+                    : { ...row, uno: map.get(row.uname) }
+            )
+        );
+    }, [units]);
+
+
     const inputColumns = [
         {
             id: "_select",
@@ -390,7 +443,7 @@ export default function ProjectExchange(props) {
             ),
             width: 40,
         },
-        { id: "no", title: "No", width: 60 },
+        { id: "no", title: "No", width: 30 },
         { id: "pjename", title: "투입물명", width: 100 },
         { id: "pjeamount", title: "투입량", width: 100 },
         { id: "uname", title: "단위", width: 100 },
@@ -411,7 +464,7 @@ export default function ProjectExchange(props) {
             ),
             width: 40,
         },
-        { id: "no", title: "No", width: 60 },
+        { id: "no", title: "No", width: 30 },
         { id: "pjename", title: "산출물명", width: 100 },
         { id: "pjeamount", title: "산출량", width: 100 },
         { id: "uname", title: "단위", width: 100 },
@@ -458,18 +511,21 @@ export default function ProjectExchange(props) {
                     />
                 ),
                 uname: (
-                    <input
-                        type="text"
-                        value={row.uname}
-                        onChange={(e) =>
-                            inputHandleChange(
-                                row.id,
-                                "uname",
-                                e.target.value
-                            )
+                    <Select
+                        placeholder={row.uname || "단위 선택"}
+                        value={row.uno ?? null}
+                        onChange={(_, newUno) =>
+                            applyUnitToRow(true, row.id, newUno)
                         }
-                        className="projectExchangeCellInput"
-                    />
+                        disabled={!unitOptions.length}
+                        size="sm"
+                    >
+                        {unitOptions.map((u) => (
+                            <Option key={u.value} value={u.value}>
+                                {u.group ? `${u.group} / ${u.label}` : u.label}
+                            </Option>
+                        ))}
+                    </Select>
                 ),
                 pname: (
                     <input
@@ -528,18 +584,21 @@ export default function ProjectExchange(props) {
                     />
                 ),
                 uname: (
-                    <input
-                        type="text"
-                        value={row.uname}
-                        onChange={(e) =>
-                            outputHandleChange(
-                                row.id,
-                                "uname",
-                                e.target.value
-                            )
+                    <Select
+                        placeholder={row.uname || "단위 선택"}
+                        value={row.uno ?? null}
+                        onChange={(_, newUno) =>
+                            applyUnitToRow(false, row.id, newUno)
                         }
-                        className="projectExchangeCellInput"
-                    />
+                        disabled={!unitOptions.length}
+                        size="sm"
+                    >
+                        {unitOptions.map((u) => (
+                            <Option key={u.value} value={u.value}>
+                                {u.group ? `${u.group} / ${u.label}` : u.label}
+                            </Option>
+                        ))}
+                    </Select>
                 ),
                 pname: (
                     <input
