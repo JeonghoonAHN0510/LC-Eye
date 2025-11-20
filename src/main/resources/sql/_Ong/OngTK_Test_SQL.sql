@@ -29,3 +29,6 @@ select * from project;
 select * from project_resultfile;
 
 select prfname from project_resultfile where pjno=300004 order by createdate desc limit 1;
+
+
+insert into project_resultfile(pjno, prfname, createdate,updatedate) values (300004, "10002_300004_result_20251118_1614", now(), now());

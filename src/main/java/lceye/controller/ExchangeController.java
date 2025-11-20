@@ -75,4 +75,18 @@ public class ExchangeController {
         return ResponseEntity.ok(exchangeService.clearIOInfo(token,pjno));
     }// func end
 
+    /**
+     * [IO-03] 투입물·산출물 정보 조회
+     * <p>
+     * 프로젝트 번호를 매개변수로 받아 투입물·산출물 json파일에서 exchanges 정보를 반환한다.
+     * @param pjno - 조회할 프로젝트 번호
+     * @return List<Map<Strig,Object>>
+     * @author OngTK
+     */
+    @GetMapping
+    public ResponseEntity<?> readIOInfo(@RequestParam int pjno){
+        return ResponseEntity.ok(exchangeService.readIOInfo(pjno));
+    } // func end
+
+
 }// class end

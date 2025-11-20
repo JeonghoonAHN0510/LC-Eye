@@ -3,8 +3,10 @@ package lceye.service;
 import lceye.model.dto.ProcessInfoDto;
 import lceye.model.dto.ProjectDto;
 import lceye.model.dto.UnitsDto;
+import lceye.model.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
+import org.hibernate.result.Output;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class ExchangeService {
     private final TranslationService translationService;
     private final UnitsService unitsService;
     private final ProcessInfoService processInfoService;
+    private final ProjectRepository projectRepository;
 
     /**
      * 투입물·산출물 저장/수정
@@ -249,5 +252,44 @@ public class ExchangeService {
         System.out.println("resultMatches : " + resultMatches);
         return new HashMap<>(resultMatches);
     }// func end
+
+    /**
+     * [IO-03] 투입물·산출물 정보 조회
+     * <p>
+     * 프로젝트 번호를 매개변수로 받아 투입물·산출물 json파일에서 exchanges 정보를 반환한다.
+     * @param pjno - 조회할 프로젝트 번호
+     * @return List<Map<Strig,Object>>
+     * @author OngTK
+     */
+    public Map<String, Object> readIOInfo(int pjno){
+        // [1] pjno로 project 테이블에 pjfile이 존재하는지 확인
+        if( projectRepository.existsById(pjno) ){
+            // [2] 존재하면 파일명을 받아옴
+            String filename = projectRepository.findById(pjno).get().getPjfilename();
+            // [3] filename으로 json 파일 불러오기
+            Map<String, Object> inOutInfo = fileService.readFile("exchange", filename);
+            // [4] exchanges list 가져오기
+            List<Map<String, Object>> exchanges = (List<Map<String, Object>>) inOutInfo.get("exchanges");
+            // [5] exchanges 에서 input과 output 리스트를 각각 만들기
+            List<Map<String, Object>> InputList = new ArrayList<>();
+            List<Map<String, Object>> OutputList = new ArrayList<>();
+            for(Map<String, Object> map : exchanges){
+                System.out.println(map);
+                if((boolean) map.get("isInput")){
+                    System.out.println(true);
+                    InputList.add(map);
+                } else {
+                    OutputList.add(map);
+                }
+            }
+            // [6] 결과 반환
+            Map<String, Object> result = new HashMap<>();
+            result.put("InputList", InputList);
+            result.put("OutputList", OutputList);
+
+            return result;
+        }
+        return null;
+    } // fucn end
 
 }// class end
