@@ -129,9 +129,11 @@ public class ExchangeService {
         }// for end
         Set<String> returnSet = new HashSet<>(inputSet);
         returnSet.removeAll(requestMap.keySet());
-        List<String> returnList = new ArrayList<>(returnSet);
-        Map<String,Set<String>> similarityMap = similarity(returnList);
-        requestMap.putAll(similarityMap);
+        if (!returnSet.isEmpty() && returnSet != null){
+            List<String> returnList = new ArrayList<>(returnSet);
+            Map<String,Set<String>> similarityMap = similarity(returnList);
+            requestMap.putAll(similarityMap);
+        }// if end
         return new HashMap<>(requestMap);
     }// func end
 
@@ -177,9 +179,11 @@ public class ExchangeService {
         }// for end
         Set<String> returnSet = new HashSet<>(inputSet);
         returnSet.removeAll(requestMap.keySet());
-        List<String> returnList = new ArrayList<>(returnSet);
-        Map<String,Set<String>> pjnoMap = autoMatchCno(returnList,token);
-        requestMap.putAll(pjnoMap);
+        if (returnSet != null && !returnSet.isEmpty()){
+            List<String> returnList = new ArrayList<>(returnSet);
+            Map<String,Set<String>> cnoMap = autoMatchCno(returnList,token);
+            requestMap.putAll(cnoMap);
+        }// if end
         // 최종 반환 타입에 맞게 Map<String, Object>로 반환
         return new HashMap<>(requestMap);
     }// func end
