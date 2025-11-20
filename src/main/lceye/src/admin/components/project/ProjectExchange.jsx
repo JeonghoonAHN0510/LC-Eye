@@ -12,15 +12,17 @@ import { useSelector } from "react-redux";
 import ProjectListTable from "./ProjectListTable.jsx";
 import useUnits from "../../hooks/useUnits";
 import "../../../assets/css/ProjectExchange.css";
+import { useLoading } from "../../contexts/LoadingContext.jsx";
 
 export default function ProjectExchange(props) {
-    const { pjno, isOpen } = props;
+    const { pjno, isOpen, onCalcSuccess } = props;
 
     const selectedProject = useSelector(
         (state) => state.project?.selectedProject
     );
     const effectivePjno = pjno ?? selectedProject?.pjno ?? null;
     const { units } = useUnits();
+    const { showLoading, hideLoading } = useLoading();
 
     const createInitialInputRows = () => [
         {
@@ -48,6 +50,12 @@ export default function ProjectExchange(props) {
 
     const [inputRows, setInputRows] = useState(createInitialInputRows);
     const [outputRows, setOutputRows] = useState(createInitialOutputRows);
+    const [originalInputRows, setOriginalInputRows] = useState(
+        createInitialInputRows
+    );
+    const [originalOutputRows, setOriginalOutputRows] = useState(
+        createInitialOutputRows
+    );
 
     const [openModal, setOpenModal] = useState(false);
     const [matchData, setMatchData] = useState([]);
@@ -191,6 +199,7 @@ export default function ProjectExchange(props) {
     };
 
     const matchAllIO = async () => {
+        const loadingId = showLoading("최적화 데이터베이스를 추천합니다.");
         setLoading(true);
         const allPjenames = [...inputRows, ...outputRows].map(
             (row) => row.pjename
@@ -199,13 +208,16 @@ export default function ProjectExchange(props) {
         if (allPjenames.length === 0 || allPjenames.includes("")) {
             alert("매칭할 투입물·산출물 이름을 모두 입력해 주세요.");
             setLoading(false);
+            hideLoading(loadingId);
             return;
         }
 
         await matchIO(allPjenames);
+        hideLoading(loadingId);
     };
 
     const matchSelectedIO = async () => {
+        const loadingId = showLoading("최적화 데이터베이스를 추천합니다.");
         setLoading(true);
 
         const selectedInputs = inputRows.filter((r) =>
@@ -219,6 +231,7 @@ export default function ProjectExchange(props) {
         if (selected.length === 0) {
             alert("선택된 항목이 없습니다.");
             setLoading(false);
+            hideLoading(loadingId);
             return;
         }
 
@@ -226,10 +239,12 @@ export default function ProjectExchange(props) {
         if (pjenames.includes("")) {
             alert("선택된 항목 중 이름이 비어 있습니다.");
             setLoading(false);
+            hideLoading(loadingId);
             return;
         }
 
         await matchIO(pjenames);
+        hideLoading(loadingId);
     };
 
     const handleCheckValue = (key, value) => {
@@ -338,16 +353,40 @@ export default function ProjectExchange(props) {
             const data = response.data;
             if (data) {
                 alert("저장되었습니다.");
+                setOriginalInputRows(inputRows);
+                setOriginalOutputRows(outputRows);
             } else {
-                alert("저장에 실패했습니다.");
+                alert("저장에 실패하였습니다.");
             }
         } catch (e) {
             console.error("[saveIOInfo error]", e);
         }
     };
 
+    const normalizeRows = (rows = []) =>
+        rows.map((r) => ({
+            id: r.id,
+            pjename: r.pjename ?? "",
+            pjeamount: String(r.pjeamount ?? ""),
+            uname: r.uname ?? "",
+            uno: r.uno ?? null,
+            pname: r.pname ?? "",
+            isInput: !!r.isInput,
+        }));
+
+    const isDirty = () => {
+        const currInput = JSON.stringify(normalizeRows(inputRows));
+        const currOutput = JSON.stringify(normalizeRows(outputRows));
+        const originalInput = JSON.stringify(normalizeRows(originalInputRows));
+        const originalOutput = JSON.stringify(
+            normalizeRows(originalOutputRows)
+        );
+        return currInput !== originalInput || currOutput !== originalOutput;
+    };
+
     const readInOut = async (pjnoParam) => {
         if (!pjnoParam) return;
+        const loadingId = showLoading("로딩중입니다.");
         try {
             const res = await axios.get("http://localhost:8080/api/inout", {
                 params: { pjno: pjnoParam },
@@ -386,10 +425,14 @@ export default function ProjectExchange(props) {
 
             setInputRows(mappedInput);
             setOutputRows(mappedOutput);
+            setOriginalInputRows(mappedInput);
+            setOriginalOutputRows(mappedOutput);
             setInputCheckedList([]);
             setOutputCheckedList([]);
         } catch (e) {
             console.error("[readInOut error]", e);
+        } finally {
+            hideLoading(loadingId);
         }
     };
 
@@ -404,6 +447,8 @@ export default function ProjectExchange(props) {
         if (!isOpen) {
             setInputRows(createInitialInputRows());
             setOutputRows(createInitialOutputRows());
+            setOriginalInputRows(createInitialInputRows());
+            setOriginalOutputRows(createInitialOutputRows());
             setInputCheckedList([]);
             setOutputCheckedList([]);
         }
@@ -427,6 +472,38 @@ export default function ProjectExchange(props) {
             )
         );
     }, [units]);
+
+    const calcLCI = async () => {
+        if (!effectivePjno) {
+            alert("프로젝트 번호가 없습니다.");
+            return;
+        }
+        if (isDirty()) {
+            alert("저장 후 다시 [계산]을 눌러주세요.");
+            return;
+        }
+        const loadingId = showLoading("계산중입니다.");
+        try {
+            const res = await axios.get(
+                `http://localhost:8080/api/lic/calc`,
+                {
+                    params: { pjno: effectivePjno },
+                    withCredentials: true,
+                }
+            );
+            const ok = res?.data === true;
+            if (ok) {
+                onCalcSuccess?.();
+            } else {
+                alert("계산에 실패하였습니다. [관리자에게 문의]");
+            }
+        } catch (e) {
+            console.error("[calcLCI error]", e);
+            alert("계산에 실패하였습니다. [관리자에게 문의]");
+        } finally {
+            hideLoading(loadingId);
+        }
+    };
 
 
     const inputColumns = [
@@ -760,7 +837,11 @@ export default function ProjectExchange(props) {
                 >
                     저장
                 </Button>
-                <Button variant="outlined">계산</Button>
+                <Button variant="outlined"
+                    onClick={calcLCI}
+                >
+                    계산
+                </Button>
                 <Button variant="outlined"
                     onClick={handleDelete}
                 >

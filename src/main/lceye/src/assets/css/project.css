@@ -33,6 +33,7 @@
 .imgBox {
     display: flex;
     align-items: right;
+    align-items: center;
 }
 
 .infoBox div {

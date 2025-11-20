@@ -37,6 +37,7 @@ export default function ProjectRightSection(props) {
     // 좌측 프로젝트 목록에서 pjno가 변경되면 투입물·산출물 아코디언 접기
     useEffect(() => {
         setExchangeOpen(false);
+        setResultOpen(false);
     }, [selectedProject?.pjno]);
 
     return (

@@ -322,9 +322,7 @@ public class LCICalculateService {
         List<Map<String, Object>> inputList = new ArrayList<>();
         List<Map<String, Object>> outputList = new ArrayList<>();
         for (Map<String, Object> map : results) {
-            System.out.println(map);
             if ((boolean) map.get("isInput")) {
-                System.out.println(true);
                 inputList.add(map);
             } else {
                 outputList.add(map);

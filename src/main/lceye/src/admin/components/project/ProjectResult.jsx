@@ -4,9 +4,11 @@ import "../../../assets/css/ProjectResult.css";
 import { Pagination } from "@mui/material";
 import { Select, Option } from "@mui/joy";
 import ProjectListTable from "./ProjectListTable.jsx";
+import { useLoading } from "../../contexts/LoadingContext.jsx";
 
 export default function ProjectResult(props) {
     const { pjno, isOpen } = props;
+    const { showLoading, hideLoading } = useLoading();
 
     const [lciInputData, setLciInputData] = useState([]);
     const [lciOutputData, setLciOutputData] = useState([]);
@@ -17,9 +19,10 @@ export default function ProjectResult(props) {
     const [inputPageInput, setInputPageInput] = useState("1");
     const [outputPageInput, setOutputPageInput] = useState("1");
 
-    // pjno 를 매개변수로 LCI 조회 =========================================
+    // LCI 데이터 조회 ================================================
     const readLCI = async (pjnoParam) => {
         if (!pjnoParam) return;
+        const loadingId = showLoading("로딩중입니다.");
         try {
             const res = await axios.get("http://localhost:8080/api/lci", {
                 params: { pjno: pjnoParam },
@@ -33,7 +36,7 @@ export default function ProjectResult(props) {
                 ? res.data.outputList
                 : [];
 
-            // fname 기준 오름차순 정렬
+            
             const sortByFnameAsc = (arr) =>
                 [...arr].sort((a, b) =>
                     String(a?.fname ?? "").localeCompare(String(b?.fname ?? ""))
@@ -50,11 +53,15 @@ export default function ProjectResult(props) {
             setInputPageInput("1");
             setOutputPageInput("1");
         } catch (error) {
-            console.error("[readLCI 실패]", error);
+            console.error("[readLCI error]", error);
+            setLciInputData([]);
+            setLciOutputData([]);
+        } finally {
+            hideLoading(loadingId);
         }
     }; // func end
 
-    // 모달이 열리고 pjno 가 있을 때 조회 ===========================
+    // pjno 변경 시 LCI 데이터 재조회 ==================================
     useEffect(() => {
         if (isOpen && pjno) {
             readLCI(pjno);
@@ -70,7 +77,7 @@ export default function ProjectResult(props) {
             ? Math.ceil(lciOutputData.length / rowsPerPage)
             : 1;
 
-    // 현재 페이지가 총 페이지보다 클 경우 보정
+    // 페이지 번호가 총 페이지 수를 넘지 않도록 조정
     useEffect(() => {
         if (inputPage > totalInputPages) {
             const next = totalInputPages || 1;
@@ -105,10 +112,10 @@ export default function ProjectResult(props) {
         const num = Number(value);
         if (!Number.isFinite(num)) return value ?? "";
         if (num === 0) return "0.000e+00";
-        return num.toExponential(3); // 소수점 셋째자리까지 지수 표기
+        return num.toExponential(3); // 지수 표기법으로 변환
     };
 
-    // 페이지 전체 기준 index 번호 부여 + amount 포맷
+    // 페이지 전체 데이터 index 번호 부여 + amount 포맷
     const inputRowsWithNo = paginatedInputData.map((item, idx) => ({
         ...item,
         no: inputStartIndex + idx + 1,
@@ -150,7 +157,7 @@ export default function ProjectResult(props) {
     return (
         <>
             <div className="projectResultTopBar">
-                <div>조회 결과</div>
+                <div>LCI 데이터</div>
                 <div style={{ width: "10rem" }}>
                     <Select
                         value={String(rowsPerPage)}
@@ -178,7 +185,7 @@ export default function ProjectResult(props) {
                     <ProjectListTable
                         columns={[
                             { id: "no", title: "No", width: 60 },
-                            { id: "fname", title: "이름", width: 100 },
+                            { id: "fname", title: "항목명", width: 100 },
                             { id: "amount", title: "양", width: 100 },
                             { id: "uname", title: "단위", width: 60 },
                         ]}
@@ -241,7 +248,7 @@ export default function ProjectResult(props) {
                     <ProjectListTable
                         columns={[
                             { id: "no", title: "No", width: 60 },
-                            { id: "fname", title: "이름", width: 100 },
+                            { id: "fname", title: "항목명", width: 100 },
                             { id: "amount", title: "양", width: 100 },
                             { id: "uname", title: "단위", width: 60 },
                         ]}
@@ -303,4 +310,3 @@ export default function ProjectResult(props) {
         </>
     ); // return end
 } // func end
-
