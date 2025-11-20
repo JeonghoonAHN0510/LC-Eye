@@ -68,6 +68,7 @@ export default function ProjectResult(props) {
         }
     }, [isOpen, pjno]);
 
+    // 페이징 처리 ===================================================
     const totalInputPages =
         rowsPerPage > 0 && lciInputData.length > 0
             ? Math.ceil(lciInputData.length / rowsPerPage)
@@ -108,6 +109,7 @@ export default function ProjectResult(props) {
         outputEndIndex
     );
 
+    // amount 값 포맷 함수 ===================================================
     const formatAmount = (value) => {
         const num = Number(value);
         if (!Number.isFinite(num)) return value ?? "";
@@ -115,7 +117,7 @@ export default function ProjectResult(props) {
         return num.toExponential(3); // 지수 표기법으로 변환
     };
 
-    // 페이지 전체 데이터 index 번호 부여 + amount 포맷
+    // 페이지 전체 데이터 index 번호 부여 + amount 포맷 ===================================================
     const inputRowsWithNo = paginatedInputData.map((item, idx) => ({
         ...item,
         no: inputStartIndex + idx + 1,
@@ -127,12 +129,14 @@ export default function ProjectResult(props) {
         amount: formatAmount(item.amount),
     }));
 
+    // 페이지 번호 클램프 함수 ===================================================
     const clampPage = (page, total) => {
         if (!total || total < 1) return 1;
         if (!page || Number.isNaN(page)) return 1;
         return Math.min(Math.max(page, 1), total);
     };
 
+    // 페이지 점프 함수 ===================================================
     const handleJumpPage = (target) => {
         if (target === "input") {
             const value = inputPageInput.trim();

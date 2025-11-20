@@ -16,6 +16,7 @@ export default function UnitSelector({
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
 
+  // 단위 그룹 목록 생성 ===================================================
   const unitGroups = useMemo(() => {
     const map = new Map();
     units.forEach((u) => {
@@ -24,11 +25,13 @@ export default function UnitSelector({
     return Array.from(map, ([ugno, ugname]) => ({ ugno, ugname }));
   }, [units]);
 
+  // 선택된 단위 그룹에 따른 상세 단위 목록 필터링 ==============================
   const filteredUnits = useMemo(
     () => units.filter((u) => u.ugno === selectedGroup),
     [units, selectedGroup]
   );
 
+  // value prop이 변경될 때 선택 상태 동기화 ==============================
   useEffect(() => {
     if (!value) {
       setSelectedGroup(null);
@@ -41,6 +44,7 @@ export default function UnitSelector({
     setSelectedUnit(unit.uno);
   }, [units, value]);
 
+  // 단위 그룹 변경 핸들러 ==============================================
   const handleGroupChange = (_, newGroup) => {
     onDirty?.();
     setSelectedGroup(newGroup);
@@ -49,6 +53,7 @@ export default function UnitSelector({
     onErrorClear?.();
   };
 
+  // 상세 단위 변경 핸들러 ==============================================
   const handleUnitChange = (_, newUno) => {
     onDirty?.();
     setSelectedUnit(newUno);
@@ -56,6 +61,7 @@ export default function UnitSelector({
     onErrorClear?.();
   };
 
+  // return ===================================================
   return (
     <div className="unitSelectArea">
       <FormControl>

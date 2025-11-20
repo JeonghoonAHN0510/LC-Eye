@@ -25,7 +25,7 @@ export default function ProjectBasicInfo(props) {
     const { isLogin } = useSelector((state) => state.admin);
     const dispatch = useDispatch();
 
-    // 단위/부서 선택 관련 상태 =============================================
+    // 단위 그룹/상세 단위 선택 관련 상태 =============================================
     const { units } = useUnits();
 
     // 폼에 바인딩되는 값들(프로젝트 명, 설명, 예산, 부서) =================
@@ -327,7 +327,7 @@ export default function ProjectBasicInfo(props) {
 
                 </div>
                 <FormHelperText>
-                    ※ 등록일/수정일이 자동으로 입력되며, 수정할 수정할 수 없습니다.
+                    ※ 등록일/수정일은 자동으로 입력되며, 수정할 수 없습니다.
                 </FormHelperText>
             </div>
         </>

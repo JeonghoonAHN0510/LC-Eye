@@ -75,6 +75,7 @@ export default function ProjectExchange(props) {
         group: u.ugname,
     }));
 
+    // Input 체크 핸들러 ==============================================================
     const handleCheckAllInput = (checked) => {
         if (checked) {
             setInputCheckedList(inputRows.map((row) => row.id));
@@ -83,6 +84,7 @@ export default function ProjectExchange(props) {
         }
     };
 
+    // Output 체크 핸들러 =============================================================
     const handleCheckAllOutput = (checked) => {
         if (checked) {
             setOutputCheckedList(outputRows.map((row) => row.id));
@@ -103,6 +105,7 @@ export default function ProjectExchange(props) {
         );
     };
 
+    // 단위 적용 함수 =========================================================
     const applyUnitToRow = (isInput, rowId, newUno) => {
         const picked = units.find((u) => u.uno === newUno);
         const updater = (prev) =>
@@ -118,6 +121,7 @@ export default function ProjectExchange(props) {
         (isInput ? setInputRows : setOutputRows)(updater);
     };
 
+    // 행 추가 함수 =========================================================
     const addInputRow = () => {
         const newId =
             inputRows.length > 0
@@ -156,6 +160,7 @@ export default function ProjectExchange(props) {
         ]);
     };
 
+    // 셀 값 변경 핸들러 =========================================================
     const inputHandleChange = (id, field, value) => {
         setInputRows((prev) =>
             prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
@@ -168,6 +173,7 @@ export default function ProjectExchange(props) {
         );
     };
 
+    // 매칭 함수 =========================================================
     const matchIO = async (pjenames) => {
         try {
             const response = await axios.post(
@@ -198,6 +204,7 @@ export default function ProjectExchange(props) {
         }
     };
 
+    // 전체 매칭 함수 =========================================================
     const matchAllIO = async () => {
         const loadingId = showLoading("최적화 데이터베이스를 추천합니다.");
         setLoading(true);
@@ -216,6 +223,7 @@ export default function ProjectExchange(props) {
         hideLoading(loadingId);
     };
 
+    // 선택 매칭 함수 =========================================================
     const matchSelectedIO = async () => {
         const loadingId = showLoading("최적화 데이터베이스를 추천합니다.");
         setLoading(true);
@@ -247,6 +255,7 @@ export default function ProjectExchange(props) {
         hideLoading(loadingId);
     };
 
+    // 매칭값 체크 핸들러 =====================================================
     const handleCheckValue = (key, value) => {
         setCheckedItems((prev) => ({
             ...prev,
@@ -270,6 +279,7 @@ export default function ProjectExchange(props) {
         setOpenModal(false);
     };
 
+    // 초기화 함수 =========================================================
     const clearIOInfo = async () => {
         if (!effectivePjno) {
             alert("프로젝트 번호가 없습니다.");
@@ -298,6 +308,7 @@ export default function ProjectExchange(props) {
         }
     };
 
+    // 삭제 함수 =========================================================
     const deleteInputRows = () => {
         if (inputCheckedList.length === 0) {
             alert("삭제할 항목을 선택해 주세요.");
@@ -333,6 +344,7 @@ export default function ProjectExchange(props) {
         if (hasOutput) deleteOutputRows();
     };
 
+    // 저장 함수 =========================================================
     const saveIOInfo = async () => {
         if (!effectivePjno) {
             alert("프로젝트 번호가 없습니다.");
@@ -363,6 +375,7 @@ export default function ProjectExchange(props) {
         }
     };
 
+    // 변경 감지 함수 =========================================================
     const normalizeRows = (rows = []) =>
         rows.map((r) => ({
             id: r.id,
@@ -374,6 +387,7 @@ export default function ProjectExchange(props) {
             isInput: !!r.isInput,
         }));
 
+    // 변경 여부 확인 함수 =========================================================
     const isDirty = () => {
         const currInput = JSON.stringify(normalizeRows(inputRows));
         const currOutput = JSON.stringify(normalizeRows(outputRows));
@@ -384,6 +398,7 @@ export default function ProjectExchange(props) {
         return currInput !== originalInput || currOutput !== originalOutput;
     };
 
+    // 데이터 불러오기 =========================================================
     const readInOut = async (pjnoParam) => {
         if (!pjnoParam) return;
         const loadingId = showLoading("로딩중입니다.");
@@ -442,7 +457,7 @@ export default function ProjectExchange(props) {
         }
     }, [isOpen, effectivePjno]);
 
-    // 아코디언이 접힐 때 행들을 초기 상태로 되돌리기
+    // 아코디언이 접힐 때 행들을 초기 상태로 되돌리기 =========================================================
     useEffect(() => {
         if (!isOpen) {
             setInputRows(createInitialInputRows());
@@ -473,6 +488,7 @@ export default function ProjectExchange(props) {
         );
     }, [units]);
 
+    // 계산 함수 =========================================================
     const calcLCI = async () => {
         if (!effectivePjno) {
             alert("프로젝트 번호가 없습니다.");
@@ -505,7 +521,7 @@ export default function ProjectExchange(props) {
         }
     };
 
-
+    // 테이블 컬럼 및 데이터 ==================================================
     const inputColumns = [
         {
             id: "_select",
@@ -548,6 +564,7 @@ export default function ProjectExchange(props) {
         { id: "pname", title: "매칭 이름", width: 200 },
     ];
 
+    // Input 테이블 데이터 ==================================================
     const inputTableData =
         inputRows.length > 0
             ? inputRows.map((row, index) => ({
@@ -621,6 +638,7 @@ export default function ProjectExchange(props) {
             }))
             : [{ __empty: true }];
 
+    // Output 테이블 데이터 ==================================================
     const outputTableData =
         outputRows.length > 0
             ? outputRows.map((row, index) => ({
@@ -788,7 +806,7 @@ export default function ProjectExchange(props) {
                                             >
                                                 {val}
                                             </Typography>
-                                        <br/>
+                                            <br />
                                         </Box>
                                     ))}
                                 </Box>
