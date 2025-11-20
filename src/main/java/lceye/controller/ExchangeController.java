@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController @RequestMapping("/api/inout")
 @RequiredArgsConstructor
@@ -52,16 +53,11 @@ public class ExchangeController {
     @PostMapping("/auto")
     public ResponseEntity<?> matchIO(@CookieValue(value = "loginMember", required = false) String token,
                                      @RequestBody List<String> inputList){
-        Map<String,Object> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
-        System.out.println("pjnoMap = " + pjnoMap);
-        Map<String,Object> cnoMap = exchangeService.autoMatchCno(inputList,token);
-        System.out.println("cnoMap = " + cnoMap);
+        Map<String, Set<String>> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
         if (pjnoMap != null && !pjnoMap.isEmpty()){
             return ResponseEntity.ok(pjnoMap);
-        } else if (cnoMap != null && !cnoMap.isEmpty()) {
-            return ResponseEntity.ok(cnoMap);
-        }else {
-            return ResponseEntity.ok(exchangeService.similarity(inputList));
+        } else {
+            return ResponseEntity.status(404).body(null);
         }// if end
     }// func end
 
