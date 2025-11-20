@@ -98,10 +98,10 @@ public class ExchangeService {
      *
      * @param clientInput 클라이언트가 입력한 투입물·산출물
      * @param token 로그인한 회원의 토큰
-     * @return Map<String,Object>
+     * @return Map<String,Set<String>>
      * @author 민성호
      */
-    public Map<String,Object> autoMatchCno(List<String> clientInput , String token){
+    public Map<String,Set<String>> autoMatchCno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int cno = jwtService.getCnoFromClaims(token);
         List<String> companyFileNames = projectService.findByCno(cno);
@@ -116,7 +116,6 @@ public class ExchangeService {
                         if (exchangeObj instanceof Map exchange) {
                             Object pjeNameObj = exchange.get("pjename");
                             Object pNameObj = exchange.get("pname");
-
                             // pjeName이 String 타입이고, Set에 포함되는지 확인
                             if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
                                 String pName = pNameObj != null ? pNameObj.toString() : "N/A";
@@ -128,7 +127,13 @@ public class ExchangeService {
                 }// if end
             }// for end
         }// for end
-        // 최종 반환 타입인 Map<String, Object>에 맞게 리턴
+        Set<String> returnSet = new HashSet<>(inputSet);
+        returnSet.removeAll(requestMap.keySet());
+        if (!returnSet.isEmpty() && returnSet != null){
+            List<String> returnList = new ArrayList<>(returnSet);
+            Map<String,Set<String>> similarityMap = similarity(returnList);
+            requestMap.putAll(similarityMap);
+        }// if end
         return new HashMap<>(requestMap);
     }// func end
 
@@ -137,10 +142,10 @@ public class ExchangeService {
      *
      * @param clientInput 클라이언트가 입력한 투입물·산출물
      * @param token 로그인한 회원의 토큰
-     * @return Map<String,Object>
+     * @return Map<String,Set<String>>
      * @author 민성호
      */
-    public Map<String,Object> autoMatchPjno(List<String> clientInput , String token){
+    public Map<String,Set<String>> autoMatchPjno(List<String> clientInput , String token){
         if (!jwtService.validateToken(token)) return null;
         int mno = jwtService.getMnoFromClaims(token);
         List<ProjectDto> projectDtos = projectService.findByMno(mno);
@@ -172,9 +177,14 @@ public class ExchangeService {
                 }// if end
             }// for end
         }// for end
-
+        Set<String> returnSet = new HashSet<>(inputSet);
+        returnSet.removeAll(requestMap.keySet());
+        if (returnSet != null && !returnSet.isEmpty()){
+            List<String> returnList = new ArrayList<>(returnSet);
+            Map<String,Set<String>> cnoMap = autoMatchCno(returnList,token);
+            requestMap.putAll(cnoMap);
+        }// if end
         // 최종 반환 타입에 맞게 Map<String, Object>로 반환
-        System.out.println("requestMap: " + requestMap);
         return new HashMap<>(requestMap);
     }// func end
 
@@ -205,20 +215,20 @@ public class ExchangeService {
      * 입력받은 투입물·산출물을 번역해서 db데이터와 유사도 측정
      *
      * @param clientInput 입력받은 투입물·산출물
-     * @return Map<String,Object>
+     * @return Map<String,Set<String>>
      * @author 민성호
      */
-    public Map<String,Object> similarity(List<String> clientInput){
+    public Map<String,Set<String>> similarity(List<String> clientInput){
         List<String> transInput = translationService.TransInput(clientInput);
         System.out.println("transInput = " + transInput);
         List<ProcessInfoDto> processInfoEntities = processInfoService.getProcessInfo();
         JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
         final double benchmark = 0.90; // 90% 기준
-        Map<String,List<String>> resultMatches = new HashMap<>();
+        Map<String,Set<String>> resultMatches = new HashMap<>();
         for (int i = 0; i < transInput.size(); i++){
             String client = clientInput.get(i);
             String input = transInput.get(i);
-            List<String> matches = new ArrayList<>();
+            Set<String> matches = new HashSet<>();
             if ("Routing".equals(input)) input = "diesel";
             String lowerInput = input.toLowerCase();
             for (ProcessInfoDto dto : processInfoEntities){
