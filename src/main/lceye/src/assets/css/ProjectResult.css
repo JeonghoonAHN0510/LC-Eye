@@ -21,7 +21,6 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-
 }
 
 .projectResultTopBar > :nth-child(1){
