@@ -85,7 +85,11 @@ public class ExchangeController {
      */
     @GetMapping
     public ResponseEntity<?> readIOInfo(@RequestParam int pjno){
-        return ResponseEntity.ok(exchangeService.readIOInfo(pjno));
+        Map<String, Object> result = exchangeService.readIOInfo(pjno);
+        if(result == null){
+            return ResponseEntity.status(403).body("잘못된 요청입니다.");
+        }
+        return ResponseEntity.ok(result);
     } // func end
 
 

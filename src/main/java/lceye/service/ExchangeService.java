@@ -284,8 +284,8 @@ public class ExchangeService {
             }
             // [6] 결과 반환
             Map<String, Object> result = new HashMap<>();
-            result.put("InputList", InputList);
-            result.put("OutputList", OutputList);
+            result.put("inputList", InputList);
+            result.put("outputList", OutputList);
 
             return result;
         }
