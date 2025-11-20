@@ -8,6 +8,7 @@ import lceye.model.repository.ProjectResultFileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -306,25 +307,47 @@ public class LCICalculateService {
 
     /**
      * [LCI-02] LCI 결과 조회하기
+     *
      * @author OngTK
      */
-    public Map<String, Object> readLCI( int pjno ){
+    public Map<String, Object> readLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
         String fileName = projectResultFileRepository.returnFilename(pjno);
-        if(fileName.isBlank()) return null;
+        if (fileName.isBlank()) return null;
         // [2] 파일명으로 파일 찾아오기
-        return fileService.readFile("result",fileName);
+        Map<String, Object> file = fileService.readFile("result", fileName);
+        // [3] results 항목만 가져오기
+        List<Map<String, Object>> results = (List<Map<String, Object>>) file.get("results");
+        // [4] result에서 input과 output을 구별
+        List<Map<String, Object>> inputList = new ArrayList<>();
+        List<Map<String, Object>> outputList = new ArrayList<>();
+        for (Map<String, Object> map : results) {
+            System.out.println(map);
+            if ((boolean) map.get("isInput")) {
+                System.out.println(true);
+                inputList.add(map);
+            } else {
+                outputList.add(map);
+            }
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("inputList", inputList);
+        result.put("outputList", outputList);
+
+        return result;
+
     } // func end
 
     /**
      * [LCI-03] LCI 결과 존재 여부 확인
+     *
      * @author OngTK
      */
-    public String checkLCI(int pjno){
+    public String checkLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
         String fileName = projectResultFileRepository.returnFilename(pjno);
         // [2] 조회 되는게 없으면 null 반환
-        if(fileName.isBlank()) return null;
+        if (fileName.isBlank()) return null;
         // [3] 조회된 String을 반환
         return fileName;
     } // func end

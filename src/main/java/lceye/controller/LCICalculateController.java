@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/lci")
 @RequiredArgsConstructor
@@ -31,7 +33,11 @@ public class LCICalculateController {
      */
     @GetMapping
     public ResponseEntity<?> readLCI(@RequestParam int pjno){
-        return ResponseEntity.ok(lciCalculateService.readLCI(pjno));
+        Map<String, Object> result = lciCalculateService.readLCI(pjno);
+        if(result == null ){
+            return ResponseEntity.status(403).body("잘못된 요청입니다.");
+        }
+        return ResponseEntity.ok(result);
     } // func end
 
     /**
