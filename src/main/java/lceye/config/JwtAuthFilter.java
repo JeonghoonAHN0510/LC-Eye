@@ -11,9 +11,9 @@ import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lceye.service.JwtService;
 import lombok.RequiredArgsConstructor;
 
@@ -25,15 +25,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     // 1. 기존 스프링 시큐리티 방식의 필터 커스텀
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1-1. 세션이 아닌 쿠키 방식의 토큰 추출
         String token = null;
-        if (request.getCookies() != null){                      // 쿠키가 존재한다면
-            for (Cookie cookie : request.getCookies()){         // 모든 쿠키를 순회하면서
-                if (cookie.getName().equals("loginMember")){    // "loginMember" 쿠키가 존재하면
-                    token = cookie.getValue();                  // 토큰에 해당 쿠키 저장
-                } // if end
-            } // for end
-        } // if end
+        // 플러터 토큰 추출
+        String authorizationHeader = request.getHeader("Authorization");
+        // 헤더가 'Bearer '로 시작하는지 확인하고 토큰만 추출
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7); // "Bearer " (7글자) 이후의 문자열이 순수한 토큰임
+        }
+        // 1-1. 세션 방식의 토큰 추출
+        if (token == null) { // 👈 3. token이 null인 경우에만 세션 검사
+            HttpSession session = request.getSession(false);
+            if (session != null){
+                token = (String) session.getAttribute("loginMember"); // 👈 4. 세션 토큰 추출 성공 시 token 값 변경
+            }// if end
+        }// if end
 
         // 1-2. UsernamePasswordAuthenticationToken 재정의
         if (token != null && jwtService.validateToken(token)){      // 토큰이 존재하면서, 토큰이 유효하면

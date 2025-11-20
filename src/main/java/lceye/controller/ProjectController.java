@@ -56,6 +56,18 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.readAllProject(token));
     } // func end
 
+    // 플러터용 전체조회
+    @GetMapping("/flutter/all")
+    public ResponseEntity<?> flutterReadAllProject(@RequestHeader(value = "Authorization" ,required = false) String header){
+        System.out.println("ProjectController.flutterReadAllProject");
+        System.out.println("header = " + header);
+        if (header != null && header.startsWith("Bearer ")){
+            String token = header.substring(7);
+            return ResponseEntity.ok(projectService.readAllProject(token));
+        }
+        return ResponseEntity.status(404).body(null);
+    } // func end
+
     /**
      * [PJ-03] 프로젝트 개별조회
      * @author OngTK
@@ -69,6 +81,17 @@ public class ProjectController {
     public ResponseEntity<?> readProject(@CookieValue(value = "loginMember", required = false) String token,
                                          @RequestParam int pjno){
         return ResponseEntity.ok(projectService.readProject(token, pjno));
+    } // func end
+
+    // 플러터용 개별조회
+    @GetMapping("/flutter")
+    public ResponseEntity<?> flutterReadProject(@RequestHeader(value = "Authorization" ,required = false) String header,
+                                         @RequestParam int pjno){
+        if (header != null && header.startsWith("Bearer ")){
+            String token = header.substring(7);
+            return ResponseEntity.ok(projectService.readProject(token,pjno));
+        }// if end
+        return ResponseEntity.status(404).body(null);
     } // func end
 
     /**
