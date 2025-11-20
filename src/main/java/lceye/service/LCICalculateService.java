@@ -313,7 +313,7 @@ public class LCICalculateService {
     public Map<String, Object> readLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
         String fileName = projectResultFileRepository.returnFilename(pjno);
-        if (fileName.isBlank()) return null;
+        if (fileName == null) return null;
         // [2] 파일명으로 파일 찾아오기
         Map<String, Object> file = fileService.readFile("result", fileName);
         // [3] results 항목만 가져오기
