@@ -178,9 +178,9 @@ export default function ProjectResult(props) {
                     <ProjectListTable
                         columns={[
                             { id: "no", title: "No", width: 60 },
-                            { id: "fname", title: "이름", width: 200 },
+                            { id: "fname", title: "이름", width: 100 },
                             { id: "amount", title: "양", width: 100 },
-                            { id: "uname", title: "단위", width: 100 },
+                            { id: "uname", title: "단위", width: 60 },
                         ]}
                         data={
                             inputRowsWithNo && inputRowsWithNo.length > 0
@@ -241,9 +241,9 @@ export default function ProjectResult(props) {
                     <ProjectListTable
                         columns={[
                             { id: "no", title: "No", width: 60 },
-                            { id: "fname", title: "이름", width: 200 },
+                            { id: "fname", title: "이름", width: 100 },
                             { id: "amount", title: "양", width: 100 },
-                            { id: "uname", title: "단위", width: 100 },
+                            { id: "uname", title: "단위", width: 60 },
                         ]}
                         data={
                             outputRowsWithNo && outputRowsWithNo.length > 0

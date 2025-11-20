@@ -391,10 +391,10 @@ export default function ProjectExchange(props) {
             width: 40,
         },
         { id: "no", title: "No", width: 60 },
-        { id: "pjename", title: "투입물명", width: 200 },
+        { id: "pjename", title: "투입물명", width: 100 },
         { id: "pjeamount", title: "투입량", width: 100 },
         { id: "uname", title: "단위", width: 100 },
-        { id: "pname", title: "매칭 이름", width: 150 },
+        { id: "pname", title: "매칭 이름", width: 200 },
     ];
 
     const outputColumns = [
@@ -412,10 +412,10 @@ export default function ProjectExchange(props) {
             width: 40,
         },
         { id: "no", title: "No", width: 60 },
-        { id: "pjename", title: "산출물명", width: 200 },
+        { id: "pjename", title: "산출물명", width: 100 },
         { id: "pjeamount", title: "산출량", width: 100 },
         { id: "uname", title: "단위", width: 100 },
-        { id: "pname", title: "매칭 이름", width: 150 },
+        { id: "pname", title: "매칭 이름", width: 200 },
     ];
 
     const inputTableData =
@@ -573,8 +573,8 @@ export default function ProjectExchange(props) {
                 <Sheet
                     sx={{
                         padding: 2,
-                        width: 450,
-                        maxHeight: "70vh",
+                        width: "50%",
+                        maxHeight: "50vh",
                         overflowY: "auto",
                         border: "2px solid #334080",
                         borderRadius: 2,
@@ -632,6 +632,7 @@ export default function ProjectExchange(props) {
                                                 alignItems: "center",
                                                 marginBottom: 0.5,
                                             }}
+                                            className="dividerLineForMatching"
                                         >
                                             <Checkbox
                                                 checked={
@@ -651,6 +652,7 @@ export default function ProjectExchange(props) {
                                             >
                                                 {val}
                                             </Typography>
+                                        <br/>
                                         </Box>
                                     ))}
                                 </Box>

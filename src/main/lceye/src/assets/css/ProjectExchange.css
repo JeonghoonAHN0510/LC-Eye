@@ -77,3 +77,8 @@
         transform: rotate(360deg);
     }
 }
+
+.dividerLineForMatching{
+    border-bottom : 0.1rem solid #eeeeee;
+    padding-bottom: 0.52rem;
+}
