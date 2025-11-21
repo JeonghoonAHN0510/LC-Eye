@@ -1,8 +1,10 @@
 package lceye.service;
 
 import lceye.model.dto.CalculateResultDto;
+import lceye.model.entity.MemberEntity;
 import lceye.model.entity.ProjectEntity;
 import lceye.model.entity.ProjectResultFileEntity;
+import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.ProjectResultFileRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class LCICalculateService {
     private final ProjectRepository projectRepository;
     private final FileService fileService;
     private final ProjectResultFileRepository projectResultFileRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * [LCI-01] LCI 계산하기
@@ -287,7 +290,7 @@ public class LCICalculateService {
         // [3] 프로젝트 기본정보: projectEntity + projectExchangeJson (필요한 만큼만)
         root.put("pjno", project.getPjno());
         root.put("pjname", project.getPjname());
-        root.put("mno", project.getMemberEntity().getMno());
+        root.put("mno", project.getMno());
 
         // [4] pjamount, uno, uname, pjdesc 등은 projectExchange JSON에서 꺼냄
         root.put("pjamount", ((Number) projectExchangeJson.get("pjamount")).doubleValue());
@@ -328,7 +331,7 @@ public class LCICalculateService {
      * @author OngTK
      */
     private String makeResultFileName(ProjectEntity project) {
-        int cno = project.getMemberEntity().getCompanyEntity().getCno();
+        int cno = memberRepository.getReferenceById(project.getMno()).getCompanyEntity().getCno();
         int pjno = project.getPjno();
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
         return cno + "_" + pjno + "_result_" + now;
