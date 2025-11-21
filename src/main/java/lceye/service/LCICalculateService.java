@@ -51,7 +51,22 @@ public class LCICalculateService {
             if (puuidObj != null) { // exchange = 프로세스
                 // [6.1] puuis String으로 파싱, 해당 프로세스의 투입/산출양 확인
                 String searchPuuid = String.valueOf(puuidObj);
-                double pjeAmount = Double.parseDouble((String) processExchange.get("pjeamount"));
+                // 타입 확인 후 처리
+                Object value = processExchange.get("pjeamount");
+                double pjeAmount = 0.0;
+                if (value instanceof Double) {
+                    pjeAmount = (Double) value;
+                }
+                else if (value instanceof Number) {
+                    // Integer, Long 등 Number 하위 타입 처리
+                    pjeAmount = ((Number) value).doubleValue();
+                }
+                else if (value instanceof String) {
+                    pjeAmount = Double.parseDouble((String) value);
+                }
+                else {
+                    throw new IllegalArgumentException("pjeamount cannot be converted to Double: " + value);
+                }
 
                 // [6.2] puuid 로 JSON 읽어오기 (※ porcess 캐쉬 처리!!>> 처리 속도 증가)
                 Map<String, Object> process = getProcessJsonFromCache(processCache, searchPuuid);
@@ -215,7 +230,21 @@ public class LCICalculateService {
         String uname = (String) projectExchangeJson.get("uname");
 
         // [2] 산출물 exchange에 입력된 양 (ex: 750kg)
-        double productAmount = Double.parseDouble((String) productExchange.get("pjeamount"));
+        Object value = productExchange.get("pjeamount");
+        double productAmount = 0.0;
+        // 안전한 타입 변환
+        if (value instanceof Double) {
+            productAmount = (Double) value;
+        }
+        else if (value instanceof Number) {
+            productAmount = ((Number) value).doubleValue();
+        }
+        else if (value instanceof String) {
+            productAmount = Double.parseDouble((String) value);
+        }
+        else {
+            throw new IllegalArgumentException("pjeamount cannot be converted to Double: " + value);
+        }
         // [3] 결과 반환에 사용될 dto
         CalculateResultDto dto = new CalculateResultDto();
 
