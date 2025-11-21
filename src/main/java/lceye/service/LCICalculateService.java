@@ -1,7 +1,6 @@
 package lceye.service;
 
 import lceye.model.dto.CalculateResultDto;
-import lceye.model.entity.MemberEntity;
 import lceye.model.entity.ProjectEntity;
 import lceye.model.entity.ProjectResultFileEntity;
 import lceye.model.repository.MemberRepository;
@@ -353,6 +352,7 @@ public class LCICalculateService {
         // [4] result에서 input과 output을 구별
         List<Map<String, Object>> inputList = new ArrayList<>();
         List<Map<String, Object>> outputList = new ArrayList<>();
+
         for (Map<String, Object> map : results) {
             if ((boolean) map.get("isInput")) {
                 inputList.add(map);
