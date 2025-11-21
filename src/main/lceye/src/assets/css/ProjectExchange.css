@@ -32,12 +32,12 @@
 }
 
 .resultTitle {
-    font-size : 1.25rem;
+    font-size: 1.25rem;
     font-weight: 600;
     margin: 0.5rem;
 }
 
-.divisionArea{
+.divisionArea {
     height: 0.5rem;
 }
 
@@ -78,7 +78,19 @@
     }
 }
 
-.dividerLineForMatching{
-    border-bottom : 0.1rem solid #eeeeee;
+.dividerLineForMatching {
+    border-bottom: 0.1rem solid #eeeeee;
     padding-bottom: 0.52rem;
+}
+
+.projectExchangeTable .rz-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.projectExchangeTable .admin-scope .rzTable thead th {
+    background-color: #2F3E77;
 }

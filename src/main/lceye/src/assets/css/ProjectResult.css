@@ -70,3 +70,14 @@
 .projectResultPagination .page-jump-button:hover {
     background-color: #25315f;
 }
+
+.projectResultBox  .rz-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.projectResultBox  .admin-scope .rzTable thead th {
+    background-color: #2F3E77;
+}

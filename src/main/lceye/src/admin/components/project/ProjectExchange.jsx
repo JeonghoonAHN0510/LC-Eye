@@ -871,38 +871,40 @@ export default function ProjectExchange(props) {
                     초기화
                 </Button>
             </div>
-            <div className="projectExchangeSectionHeader">
-                <div className="resultTitle">투입물</div>
-                <Button variant="outlined"
-                    onClick={addInputRow}
-                >
-                    행추가
-                </Button>
-            </div>
-            <ProjectListTable
-                columns={inputColumns}
-                data={inputTableData}
-                rememberKey="ProjectExchangeInputTable"
-                sortable={false}
-                stickyFirst={false}
-            />
-            <div className="divisionArea"></div>
+            <div className="projectExchangeTable">
+                <div className="projectExchangeSectionHeader">
+                    <div className="resultTitle">투입물</div>
+                    <Button variant="outlined"
+                        onClick={addInputRow}
+                    >
+                        행추가
+                    </Button>
+                </div>
+                <ProjectListTable
+                    columns={inputColumns}
+                    data={inputTableData}
+                    rememberKey="ProjectExchangeInputTable"
+                    sortable={false}
+                    stickyFirst={false}
+                />
+                <div className="divisionArea"></div>
 
-            <div className="projectExchangeSectionHeader">
-                <div className="resultTitle">산출물</div>
-                <Button variant="outlined"
-                    onClick={addOutputRow}
-                >
-                    행추가
-                </Button>
+                <div className="projectExchangeSectionHeader">
+                    <div className="resultTitle">산출물</div>
+                    <Button variant="outlined"
+                        onClick={addOutputRow}
+                    >
+                        행추가
+                    </Button>
+                </div>
+                <ProjectListTable
+                    columns={outputColumns}
+                    data={outputTableData}
+                    rememberKey="ProjectExchangeOutputTable"
+                    sortable={false}
+                    stickyFirst={false}
+                />
             </div>
-            <ProjectListTable
-                columns={outputColumns}
-                data={outputTableData}
-                rememberKey="ProjectExchangeOutputTable"
-                sortable={false}
-                stickyFirst={false}
-            />
         </>
     ); // return end
 } // func end

@@ -161,7 +161,7 @@ export default function ProjectResult(props) {
     return (
         <>
             <div className="projectResultTopBar">
-                <div>LCI 데이터</div>
+                <div>조회 행 수</div>
                 <div style={{ width: "10rem" }}>
                     <Select
                         value={String(rowsPerPage)}
