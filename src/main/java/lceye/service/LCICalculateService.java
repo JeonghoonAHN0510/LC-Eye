@@ -40,11 +40,10 @@ public class LCICalculateService {
         // [4.1] 프로세스 JSON 캐시
         Map<String, Map<String, Object>> processCache = new HashMap<>();
         // [4.2] 산출물 exchange(완제품) 저장용 변수 (puuid == null && isInput == false)
-        Map<String, Object> productExchange = null;
+        Map<String, Object> productExchange = new HashMap<>();
 
         // [5] exchange 를 1개씩 꺼내서 처리
         for (Map<String, Object> processExchange : processExchanges) {
-
             // [5.1] exchnage(process)의 uuid와 input 여부 꺼내기
             Object puuidObj = processExchange.get("puuid");
             Boolean isInput = (Boolean) processExchange.get("isInput");
@@ -52,7 +51,8 @@ public class LCICalculateService {
             if (puuidObj != null) { // exchange = 프로세스
                 // [6.1] puuis String으로 파싱, 해당 프로세스의 투입/산출양 확인
                 String searchPuuid = String.valueOf(puuidObj);
-                double pjeAmount = (double) processExchange.get("pjeamount");
+                double pjeAmount = Double.parseDouble((String) processExchange.get("pjeamount"));
+
                 // [6.2] puuid 로 JSON 읽어오기 (※ porcess 캐쉬 처리!!>> 처리 속도 증가)
                 Map<String, Object> process = getProcessJsonFromCache(processCache, searchPuuid);
                 // [6.3] process 내부에서 exchanges(=flow 리스트) 가져오기
@@ -71,11 +71,12 @@ public class LCICalculateService {
         }
         // [7] resultMap -> List<CalculateResultDto> 변환
         List<CalculateResultDto> results = new ArrayList<>(resultMap.values());
+        System.out.println(results);
 
         // [7.1] 산출물 DTO 한 줄 추가 (productExchange가 존재할 때만)
         if (productExchange != null) {
             CalculateResultDto productDto = buildProductResultDto(projectEntity, readFileData, productExchange, pjamount);
-            results.add(productDto);  // 맨 뒤에 붙이거나 앞에 넣고 싶으면 add(0, productDto);
+            results.add(productDto);
         }
 
         // [8] 산출물 1 단위(예: 1 kg) 기준으로 환산
@@ -214,8 +215,7 @@ public class LCICalculateService {
         String uname = (String) projectExchangeJson.get("uname");
 
         // [2] 산출물 exchange에 입력된 양 (ex: 750kg)
-        double productAmount = ((Number) productExchange.get("pjeamount")).doubleValue();
-
+        double productAmount = Double.parseDouble((String) productExchange.get("pjeamount"));
         // [3] 결과 반환에 사용될 dto
         CalculateResultDto dto = new CalculateResultDto();
 

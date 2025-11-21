@@ -206,7 +206,7 @@ export default function ProjectExchange(props) {
 
     // 전체 매칭 함수 =========================================================
     const matchAllIO = async () => {
-        const loadingId = showLoading("최적화 데이터베이스를 추천합니다.");
+        const loadingId = showLoading("최적 데이터베이스를 추천합니다.");
         setLoading(true);
         const allPjenames = [...inputRows, ...outputRows].map(
             (row) => row.pjename
@@ -501,7 +501,7 @@ export default function ProjectExchange(props) {
         const loadingId = showLoading("계산중입니다.");
         try {
             const res = await axios.get(
-                `http://localhost:8080/api/lic/calc`,
+                `http://localhost:8080/api/lci/calc`,
                 {
                     params: { pjno: effectivePjno },
                     withCredentials: true,
