@@ -1,6 +1,7 @@
 package lceye.service;
 
 import lceye.model.dto.ProjectDto;
+import lceye.model.entity.MemberEntity;
 import lceye.model.entity.ProjectEntity;
 import lceye.model.entity.UnitsEntity;
 import lceye.model.mapper.ProjectMapper;
@@ -154,31 +155,37 @@ public class ProjectService {
         // [3.1] Token, pjNo가 없으면 null로 반환
         if(!jwtService.validateToken(token)) return null;
         if(pjNo == 0) return null;
-        // [3.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
+        // [3.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출 - 로그인한 사용자
         int mno = jwtService.getMnoFromClaims(token);
         int cno = jwtService.getCnoFromClaims(token);
         String mrole = jwtService.getRoleFromClaims(token);
 
-        // [3.3] mno로 MemberRepository 조회
-        // MemberEntity memberEntity = memberRepository.getReferenceById(mno);
+        // [3.3] 공통 정보 조회 : 프로젝트 정보 / 프로젝트 작성자 정보
+        ProjectEntity resultEntity = projectRepository.getReferenceById(pjNo);
+        MemberEntity writer = memberRepository.getReferenceById(resultEntity.getMno());
+
         // [3.4] mrole(역할)에 따른 서로 다른 조회 구현
+
         // [3.5] mrole = admin or manager
         if(mrole.equals("ADMIN") || mrole.equals("MANAGER")){
-            // [3.5.1] project Entity 조회
-             ProjectEntity result = projectRepository.getReferenceById(pjNo);
-            // [3.5.2] 작성자의 cno 와 로그인한 계정의 cno가 일치하지 않으면 null
-            if( memberRepository.getReferenceById(result.getMno()).getCompanyEntity().getCno() != cno)
-            {return null; }
-            // [3.5.3] 일치하므로 결과 반환
-            return result.toDto();
+            // [3.5.1] 작성자의 회사번호와 로그인한 사람의 회원번호가 일치하지 않는다면
+            if( writer.getCompanyEntity().getCno() != cno)
+            // null 반환
+            { return null; }
+            // [3.5.2] cno 일치 시, projectDto 에 작성자 이름 삽입
+            ProjectDto result = resultEntity.toDto();
+            result.setMname(writer.getMname());
+            // [3.5.4] 결과 반환
+            return result;
         }
         // [3.6] mrole = worker
         if(mrole.equals("WORKER")){
             // [3.6.1] 프로젝트 Entity 조회
-            ProjectDto result = projectRepository.getReferenceById(pjNo).toDto();
-            // [3.6.2] 조회 결과의 mno와 로그인 계정의 mno가 일치하지 않으므로 null
+            ProjectDto result = resultEntity.toDto();
+            // [3.6.2] 작성자 mno와 로그인 계정의 mno가 일치하지 않으므로 null
             if(result.getMno() != mno) return null; //
-            // [3.6.3] 조회 결과의 mno와 로그인 계정의 mno가 일치하므로 결과 반환
+            // [3.6.3] 조회 결과의 mno와 로그인 계정의 mno가 일치하면 작성자 이름 삽입
+            result.setMname(writer.getMname());
             return result;
         }
         return null;
