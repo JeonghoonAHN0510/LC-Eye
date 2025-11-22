@@ -12,6 +12,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:5173", "http://localhost:5174" , "http://localhost:61577/")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowCredentials(true)
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .maxAge(3600);
     } // func end
 } // class end
