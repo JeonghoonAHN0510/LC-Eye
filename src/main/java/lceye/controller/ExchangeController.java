@@ -1,7 +1,8 @@
 package lceye.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lceye.service.ExchangeService;
-import lceye.service.FileService;
 import lceye.service.TranslationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,49 +31,76 @@ public class ExchangeController {
     /**
      * 투입물·산출물 저장/수정
      *
-     * @param token 로그인 토큰
+     * @param request 요청한 회원의 HTTP 요청 정보
      * @param map 투입물·산출물 정보
      * @return boolean
      * @author 민성호
      */
     @PostMapping
-    public ResponseEntity<?> saveIOInfo(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> saveIOInfo(HttpServletRequest request,
                                         @RequestBody Map<String,Object> map){
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
         System.out.println("map : " + map);
-        return ResponseEntity.ok(exchangeService.saveInfo(map,token));
+        if (token != null){
+            return ResponseEntity.ok(exchangeService.saveInfo(map,token));
+        } else {
+            return ResponseEntity.status(401).body(null);
+        } // if end
     }// func end
 
     /**
      * 투입물·산출물 프로세스와 자동매칭
      *
-     * @param token 로그인한 회원의 토큰
+     * @param request 요청한 회원의 HTTP 요청 정보
      * @param inputList 클라이언트가 입력한 투입물·산출물
      * @return Map<String,Object>
      * @author 민성호
      */
     @PostMapping("/auto")
-    public ResponseEntity<?> matchIO(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> matchIO(HttpServletRequest request,
                                      @RequestBody List<String> inputList){
-        Map<String, Set<String>> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
-        if (pjnoMap != null && !pjnoMap.isEmpty()){
-            return ResponseEntity.ok(pjnoMap);
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        if (token != null){
+            Map<String, Set<String>> pjnoMap = exchangeService.autoMatchPjno(inputList,token);
+            if (pjnoMap != null && !pjnoMap.isEmpty()){
+                return ResponseEntity.ok(pjnoMap);
+            } else {
+                return ResponseEntity.status(404).body(null);
+            } // if end
         } else {
             return ResponseEntity.status(404).body(null);
-        }// if end
+        } // if end
     }// func end
 
     /**
      * 프로젝트 초기화
      *
-     * @param token 로그인한 회원의 토큰
+     * @param request 요청한 회원의 HTTP 요청 정보
      * @param pjno 삭제할 프로젝트번호
      * @return boolean
      * @author 민성호
      */
     @DeleteMapping
-    public ResponseEntity<?> clearIOInfo(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> clearIOInfo(HttpServletRequest request,
                                          @RequestParam int pjno){
-        return ResponseEntity.ok(exchangeService.clearIOInfo(token,pjno));
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        if (token != null){
+            return ResponseEntity.ok(exchangeService.clearIOInfo(token,pjno));
+        } else {
+            return ResponseEntity.status(404).body(null);
+        } // if end
     }// func end
 
     /**
@@ -91,6 +119,4 @@ public class ExchangeController {
         }
         return ResponseEntity.ok(result);
     } // func end
-
-
-}// class end
+} // class end

@@ -48,5 +48,4 @@ public class LCICalculateController {
     public ResponseEntity<?> checkLCI(@RequestParam int pjno){
         return ResponseEntity.ok(lciCalculateService.checkLCI(pjno));
     } // func end
-
 } // class end

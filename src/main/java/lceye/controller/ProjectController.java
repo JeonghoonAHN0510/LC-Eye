@@ -1,12 +1,12 @@
 package lceye.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lceye.model.dto.ProjectDto;
 import lceye.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/project")
@@ -24,9 +24,14 @@ public class ProjectController {
      * @author OngTK
      */
     @PostMapping
-    public ResponseEntity<?> saveProject(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> saveProject(HttpServletRequest request,
                                          @RequestBody ProjectDto projectDto){
-        ProjectDto result = null;
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        ProjectDto result;
         // [1.1] 쿠키 내 토큰이 존재
         if(token!=null){
             result = projectService.saveProject(token,projectDto);
@@ -52,8 +57,17 @@ public class ProjectController {
      * @author OngTK
      */
     @GetMapping("/all")
-    public ResponseEntity<?> readAllProject(@CookieValue(value = "loginMember", required = false) String token){
-        return ResponseEntity.ok(projectService.readAllProject(token));
+    public ResponseEntity<?> readAllProject(HttpServletRequest request){
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        if (token != null){
+            return ResponseEntity.ok(projectService.readAllProject(token));
+        } else {
+            return ResponseEntity.status(404).body(null);
+        } // if end
     } // func end
 
     // 플러터용 전체조회
@@ -78,9 +92,18 @@ public class ProjectController {
      * @quthor OngTK
      */
     @GetMapping
-    public ResponseEntity<?> readProject(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> readProject(HttpServletRequest request,
                                          @RequestParam int pjno){
-        return ResponseEntity.ok(projectService.readProject(token, pjno));
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        if (token != null){
+            return ResponseEntity.ok(projectService.readProject(token, pjno));
+        } else {
+            return ResponseEntity.status(404).body(null);
+        } // if end
     } // func end
 
     // 플러터용 개별조회
@@ -101,13 +124,20 @@ public class ProjectController {
      * @author OngTK
      */
     @PutMapping
-    public ResponseEntity<?> updateProject(@CookieValue(value = "loginMember", required = false) String token,
+    public ResponseEntity<?> updateProject(HttpServletRequest request,
                                            @RequestBody ProjectDto projectDto){
-        ProjectDto result = projectService.updateProject(token, projectDto);
+        HttpSession session = request.getSession(false);
+        String token = null;
+        if (session != null){
+            token = (String) session.getAttribute("loginMember");
+        } // if end
+        ProjectDto result = null;
+        if (token != null){
+            result = projectService.updateProject(token, projectDto);
+        } // if end
         if(result == null){
             return ResponseEntity.status(403).body("잘못된 요청입니다.");
         }
         return ResponseEntity.ok(result);
     }
-
 } // class end
