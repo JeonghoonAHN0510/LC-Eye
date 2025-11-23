@@ -38,45 +38,46 @@ public class ExcelService {
     private final ProjectResultFileRepository projectResultFileRepository;
 
     /**
-     *  [Excel-01] 엑셀 다운로드
-     * @param token 로그인 토큰
-     * @param pjno 프로젝트 번호
+     * [Excel-01] 엑셀 다운로드
+     *
+     * @param token    로그인 토큰
+     * @param pjno     프로젝트 번호
      * @param response 엑셀 다운로드용 응답
      * @author OngTK
      */
-    public boolean downloadExcel(String token, int pjno, HttpServletResponse response){
+    public boolean downloadExcel(String token, int pjno, HttpServletResponse response) {
         System.out.println("ExcelService.downloadExcel");
         System.out.println("token = " + token + ", pjno = " + pjno + ", response = " + response);
 
         // [1] 로그인 토큰 확인
         // [1.1] 로그인 토큰이 비어있으면 false
-        if(!jwtService.validateToken(token)) return false;
+        if (!jwtService.validateToken(token)) return false;
         // [1.2] 토큰이 존재한다면, 토큰에서 mno(작성자) 정보 추출
         int mno = jwtService.getMnoFromClaims(token);
         int cno = jwtService.getCnoFromClaims(token);
         String mrole = jwtService.getRoleFromClaims(token);
-        System.out.println("[Excel-01 Token Check] " + mno + " / " +cno+ " / " +mrole);
+        System.out.println("[Excel-01 Token Check] " + mno + " / " + cno + " / " + mrole);
 
         // [2] pjno 유효성 검사·존재여부 확인
         // [2.1] pjno 유효성 검사
-        if(pjno == 0) return false;
-        if(!projectRepository.existsById(pjno)) return false;
+        if (pjno == 0) return false;
+        if (!projectRepository.existsById(pjno)) return false;
         // [2.2] pjno가 존재하면 cno와 pjno 기반 project 정보 조회
         ExcelProjectDto excelProjectDto = new ExcelProjectDto();
         // [2.3] mrole에 따른 서로 다른 조회
-        if(mrole.equals("WORKER")){
+        if (mrole.equals("WORKER")) {
             // [2.3.1] WORKER 는 본인 mno에 한정하여 조회되어야 함
-            excelProjectDto = excelProjectMapper.readByMnoAndPjno(mno,pjno);
+            excelProjectDto = excelProjectMapper.readByMnoAndPjno(mno, pjno);
             System.out.println(excelProjectDto);
         } else if (mrole.equals("ADMIN") || mrole.equals("MANAGER")) {
             // [2.3.2] ADMIN, MANAGER 는 본인과 작성자가 아니더라도 cno가 일치하면 조회 가능
-            excelProjectDto = excelProjectMapper.readByCnoAndPjno(cno,pjno);
+            excelProjectDto = excelProjectMapper.readByCnoAndPjno(cno, pjno);
             System.out.println(excelProjectDto);
         }
 
         // [3] pjno 존재시 excel 생성 및 첫번째 시트 작성
         // [3.1] excelProjectDto가 null 이면 false 리턴
-        if(excelProjectDto == null) return false;
+        if (excelProjectDto == null) return false;
         // [3.2] Excel 작성에 필요한 객체 생성 [helper-01 실행]
         try (Workbook workbook = createExcelFile(excelProjectDto, response)) {
             // [3.3] 첫번째 시트 작성 [helper-02 실행]
@@ -84,7 +85,7 @@ public class ExcelService {
 
             // [4] pjno로 project 테이블의 pjfilename 컬럼 존재여부 확인
             String pjfilename = excelProjectDto.getPjfilename();
-            if(pjfilename == null || pjfilename.isEmpty() || pjfilename.isBlank()){
+            if (pjfilename == null || pjfilename.isEmpty() || pjfilename.isBlank()) {
                 // [4.1] pjfilename 이 empty면 현재 상태의 엑셀 출력
                 workbook.write(response.getOutputStream());
                 response.flushBuffer();
@@ -92,26 +93,34 @@ public class ExcelService {
             } else {
                 // [4.2] pjfilename 이 있으면, s3에서 데이터를 가져오고, 엑셀을 작성
                 Map<String, Object> projectJson = fileUtil.readFile("exchange", pjfilename);
-                Object exchangesObj = projectJson.get("exchanges");
-                if(exchangesObj instanceof List<?> exchanges){
-                    writeProjectExchange(workbook, exchanges);
-                }
+                List<Map<String, Object>> exchanges = (List<Map<String, Object>>) projectJson.get("exchanges");
+                writeProjectExchange(workbook, exchanges);
             }
 
             // [5] pjno로 projcetResultfile 테이블의 가장 최근의 레코드 존재여부 확인
             String projectResultFileName = projectResultFileRepository.returnFilename(pjno);
             // [5.1] 조회되는 파일이 없다면, 현재 상태의 엑셀 출력
-            if(projectResultFileName == null || projectResultFileName.isEmpty() || projectResultFileName.isBlank()){
+            if (projectResultFileName == null || projectResultFileName.isEmpty() || projectResultFileName.isBlank()) {
                 workbook.write(response.getOutputStream());
                 response.flushBuffer();
                 return true;
             }
             // [5.2] 조회되는 파일이 있다면, prfname 컬럼의 값으로 s3에서 데이터를 가져오고, 엑셀을 작성
             Map<String, Object> resultJson = fileUtil.readFile("result", projectResultFileName);
-            Object resultObj = resultJson.get("results");
-            if(resultObj instanceof List<?> results){
-                writeProjectResult(workbook, results);
+
+            // [5.3] inputList와 outputList 구별
+            List<Map<String, Object>> inputList = new ArrayList<>();
+            List<Map<String, Object>> outputList = new ArrayList<>();
+            List<Map<String, Object>> results = (List<Map<String, Object>>) resultJson.get("results");
+            for (Map<String, Object> map : results) {
+                if ((boolean) map.get("isInput")) {
+                    inputList.add(map);
+                } else {
+                    outputList.add(map);
+                }
             }
+            writeProjectResult(workbook, inputList, outputList);
+
             // [6] 최종 결과 반환
             workbook.write(response.getOutputStream());
             response.flushBuffer();
@@ -125,6 +134,7 @@ public class ExcelService {
 
     /**
      * [Helper 01] Excel 파일 생성 + 파일명 생성
+     *
      * @author OngTK
      */
     private Workbook createExcelFile(ExcelProjectDto excelProjectDto, HttpServletResponse response) throws IOException {
@@ -133,7 +143,7 @@ public class ExcelService {
         // [2] 파일명 작성 : "프로젝트명_yyyyMMdd_hhmmss.xlsx"
         // [2.1] 프로젝트 명 추출
         String projectName = excelProjectDto.getPjname();
-        if(projectName == null || projectName.isBlank()){
+        if (projectName == null || projectName.isBlank()) {
             projectName = "project";
         }
         // [2.2] timestamp 작성
@@ -151,9 +161,10 @@ public class ExcelService {
 
     /**
      * [Helper 02] Excel 첫번째 시트 - 프로젝트 정보 작성
+     *
      * @author OngTK
      */
-    private void writeProjectInfo(Workbook workbook, ExcelProjectDto excelProjectDto){
+    private void writeProjectInfo(Workbook workbook, ExcelProjectDto excelProjectDto) {
         // [1] 시트 생성 + 시트명 지정
         Sheet sheet = workbook.createSheet("프로젝트 정보");
         // [2] 작성 대상에 대해서 excelProjectDto를 Object 배열로 변환
@@ -204,31 +215,32 @@ public class ExcelService {
 
     /**
      * [Helper 03] Excel 두번째 시트 - 프로젝트 교환물 정보 작성
+     *
      * @author OngTK
      */
-    private void writeProjectExchange(Workbook workbook, List<?> exchanges){
+    private void writeProjectExchange(Workbook workbook, List<?> exchanges) {
         // [1] 시트 생성 + 시트명 지정
         Sheet sheet = workbook.createSheet("투입물·산출물");
         // [2] 컬럼명 작성 (B2 시작)
         Row header = sheet.createRow(1);
         String[] headers = {"방향", "명칭", "양", "단위", "프로세스명", "프로세스uuid"};
-        for(int i=0; i<headers.length; i++){
+        for (int i = 0; i < headers.length; i++) {
             Cell cell = header.createCell(1 + i);
             cell.setCellValue(headers[i]);
         }
         // [3] 데이터 입력 (B3 시작)
         int rowIndex = 2;
         // [3.1] 반복문 obj(map)를 하나씩 꺼냄
-        for(Object obj : exchanges){
-            if(!(obj instanceof Map<?,?> map)) continue;
+        for (Object obj : exchanges) {
+            if (!(obj instanceof Map<?, ?> map)) continue;
             // [3.1.1] 셀 활성화 + 작성할 행 생성
             Row row = sheet.createRow(rowIndex++);
             // [3.1.2] 방향
             boolean isInput = false;
             Object isInputObj = map.get("isInput");
-            if(isInputObj instanceof Boolean boolVal){
+            if (isInputObj instanceof Boolean boolVal) {
                 isInput = boolVal;
-            } else if (isInputObj instanceof Number numVal){
+            } else if (isInputObj instanceof Number numVal) {
                 isInput = numVal.intValue() != 0;
             }
             String direction = isInput ? "투입물" : "산출물";
@@ -237,7 +249,7 @@ public class ExcelService {
             // [3.1.4] 양
             Object amountObj = map.get("pjeamount");
             double amount = 0;
-            if(amountObj instanceof Number num){
+            if (amountObj instanceof Number num) {
                 amount = num.doubleValue();
             }
             // [3.1.5] 단위
@@ -257,48 +269,27 @@ public class ExcelService {
         }
 
         // [3.2] 열 크기 자동 조절 (B~G)
-        for(int col=1; col<=6; col++){
+        for (int col = 1; col <= 6; col++) {
             sheet.autoSizeColumn(col);
         }
     } // func end
 
     /**
      * [Helper 04] Excel 세번째 시트 - 프로젝트 결과 정보 작성
+     *
      * @author OngTK
      */
-    private void writeProjectResult(Workbook workbook, List<?> results){
-        // [1] result에서 input/output을 구분
-        List<Map<String, Object>> inputList = new ArrayList<>();
-        List<Map<String, Object>> outputList = new ArrayList<>();
-        for (Object obj : results) {
-            if(!(obj instanceof Map<?,?> map)) continue;
-            boolean isInput = false;
-            Object isInputObj = map.get("isInput");
-            if(isInputObj instanceof Boolean boolVal){
-                isInput = boolVal;
-            } else if (isInputObj instanceof Number numVal){
-                isInput = numVal.intValue() != 0;
-            } else if(map.containsKey("isinput")){
-                Object lowerObj = map.get("isinput");
-                if(lowerObj instanceof Boolean b){ isInput = b; }
-                else if(lowerObj instanceof Number n){ isInput = n.intValue() != 0; }
-                else if(lowerObj instanceof String s){ isInput = Boolean.parseBoolean(s); }
-            } else if (isInputObj instanceof String sVal) {
-                isInput = Boolean.parseBoolean(sVal);
-            }
-            if(isInput){
-                inputList.add((Map<String, Object>) map);
-            } else {
-                outputList.add((Map<String, Object>) map);
-            }
-        }
-        System.out.println("[inputList]"+inputList);
-        System.out.println("[outputList]"+outputList);
+    private void writeProjectResult(Workbook workbook,
+                                    List<Map<String, Object>> inputList,
+                                    List<Map<String, Object>> outputList) {
+        System.out.println("ExcelService.writeProjectResult");
+        System.out.println("workbook = " + workbook + ", inputList = " + inputList + ", outputList = " + outputList);
 
-        // [2] 시트 생성 + 시트명 지정
+
+        // [1] 시트 생성 + 시트명 지정
         Sheet sheet = workbook.createSheet("LCI결과");
 
-        // [3] 제목 설정 (B2 INPUT, G2 OUTPUT)
+        // [2] 제목 설정 (B2 INPUT, G2 OUTPUT)
         Font boldFont = workbook.createFont();
         boldFont.setBold(true);
         CellStyle boldStyle = workbook.createCellStyle();
@@ -311,22 +302,22 @@ public class ExcelService {
         outputTitle.setCellValue("OUTPUT");
         outputTitle.setCellStyle(boldStyle);
 
-        // [4] 컬럼명 작성 (B3, G3)
+        // [3] 컬럼명 작성 (B3, G3)
         Row headerRow = sheet.createRow(2);
         String[] headers = {"흐름명", "양", "단위", "UUID"};
-        for(int i=0; i<headers.length; i++){
+        for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(1 + i).setCellValue(headers[i]);
             headerRow.createCell(6 + i).setCellValue(headers[i]);
         }
 
-        // [5] INPUT 데이터 입력 (B4 시작)
+        // [4] INPUT 데이터 입력 (B4 시작)
         int inputRowIndex = 3;
-        for(Map<String, Object> map : inputList){
+        for (Map<String, Object> map : inputList) {
             Row row = sheet.createRow(inputRowIndex++);
             row.createCell(1).setCellValue(defaultString(map.get("fname") == null ? null : map.get("fname").toString()));
             Object amountObj = map.get("amount");
             double amount = 0;
-            if(amountObj instanceof Number num){
+            if (amountObj instanceof Number num) {
                 amount = num.doubleValue();
             }
             row.createCell(2).setCellValue(amount);
@@ -336,12 +327,16 @@ public class ExcelService {
 
         // [6] OUTPUT 데이터 입력 (G4 시작)
         int outputRowIndex = 3;
-        for(Map<String, Object> map : outputList){
-            Row row = sheet.createRow(outputRowIndex++);
+        for (Map<String, Object> map : outputList) {
+            Row row = sheet.getRow(outputRowIndex);
+            if (row == null) {
+                row = sheet.createRow(outputRowIndex);
+            }
+            outputRowIndex++;
             row.createCell(6).setCellValue(defaultString(map.get("fname") == null ? null : map.get("fname").toString()));
             Object amountObj = map.get("amount");
             double amount = 0;
-            if(amountObj instanceof Number num){
+            if (amountObj instanceof Number num) {
                 amount = num.doubleValue();
             }
             row.createCell(7).setCellValue(amount);
@@ -350,13 +345,13 @@ public class ExcelService {
         }
 
         // [7] 열 크기 자동 조절 (B~J 까지)
-        for(int col=1; col<=9; col++){
+        for (int col = 1; col <= 9; col++) {
             sheet.autoSizeColumn(col);
         }
 
     } // func end
 
-    private String defaultString(String value){
+    private String defaultString(String value) {
         return value == null ? "" : value;
     }
 } // class end
