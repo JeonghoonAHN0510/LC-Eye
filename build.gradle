@@ -57,7 +57,7 @@ dependencies {
     // [14] Jackson 기본 ObjectMapper의 localDateTime 직렬화 해결을 위한 라이브러리
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     // [15] Redisson
-    implementation 'org.redisson:redisson-spring-boot-starter:3.16.3'
+    implementation 'org.redisson:redisson-spring-boot-starter:3.52.0'
     // [16] Redis Session
     implementation 'org.springframework.session:spring-session-data-redis'
 }
