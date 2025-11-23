@@ -38,10 +38,10 @@ public class MemberController {
             // 3. 세션 및 Redis에 토큰 저장
             HttpSession session = request.getSession(true);
             session.setAttribute("loginMember", result.getToken());
-            // 5. 성공한 회원의 Dto 반환
+            // 4. 성공한 회원의 Dto 반환
             return ResponseEntity.status(200).body(result);
         } // if end
-        // 6. 로그인을 실패했다면, false 반환
+        // 5. 로그인을 실패했다면, false 반환
         return ResponseEntity.status(401).body(null);
     } // func end
 
@@ -63,7 +63,7 @@ public class MemberController {
         if (result != null){
             return ResponseEntity.ok(result.getToken());
         } // if end
-        // 6. 최종적으로 결과 반환
+        // 3. 최종적으로 결과 반환
         return ResponseEntity.status(401).body(null);
     } // func end
 
