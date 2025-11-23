@@ -62,6 +62,9 @@ dependencies {
     implementation 'org.springframework.session:spring-session-data-redis'
     // [17] AWS S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // [18] Apache POI (마이크로소프트 오피스 InOut 처리 라이브러리)
+    implementation 'org.apache.poi:poi:5.5.0'
+    implementation 'org.apache.poi:poi-ooxml:5.5.0'
 }
 
 tasks.named('test') {
