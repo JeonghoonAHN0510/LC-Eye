@@ -208,7 +208,11 @@ export default function ProjectResult(props) {
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = downloadUrl;
-            link.setAttribute("download", `project-${pjno}.xlsx`);
+            const disposition = res.headers["content-disposition"] || "";
+            const match = disposition.match(/filename\\*=UTF-8''(.+)|filename="?([^\";]+)"?/i);
+            const encoded = match?.[1] || match?.[2];
+            const fileName = encoded ? decodeURIComponent(encoded) : `project-${pjno}.xlsx`;
+            link.setAttribute("download", fileName);
             document.body.appendChild(link);
             link.click();
             link.remove();

@@ -143,15 +143,19 @@ public class ExcelService {
         // [2] 파일명 작성 : "프로젝트명_yyyyMMdd_hhmmss.xlsx"
         // [2.1] 프로젝트 명 추출
         String projectName = excelProjectDto.getPjname();
+        System.out.println("projectName 1 = " + projectName);
         if (projectName == null || projectName.isBlank()) {
             projectName = "project";
         }
+        System.out.println("projectName 2 = " + projectName);
         // [2.2] timestamp 작성
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         // [2.3] 파일명 작성 + 확장자 작성
         String fileName = projectName + "_" + timestamp + ".xlsx";
+        System.out.println("fileName = " + fileName);
         // [2.4] 한글을 UTF_8 인코딩
         String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        System.out.println("encodedFileName = " + encodedFileName);
         // [3] 다운로드를 위해 response 객체에 response 설정
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
@@ -283,8 +287,6 @@ public class ExcelService {
                                     List<Map<String, Object>> inputList,
                                     List<Map<String, Object>> outputList) {
         System.out.println("ExcelService.writeProjectResult");
-        System.out.println("workbook = " + workbook + ", inputList = " + inputList + ", outputList = " + outputList);
-
 
         // [1] 시트 생성 + 시트명 지정
         Sheet sheet = workbook.createSheet("LCI결과");

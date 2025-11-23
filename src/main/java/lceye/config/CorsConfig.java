@@ -13,6 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowCredentials(true)
                 .allowedHeaders("*")
+                .exposedHeaders("Content-Disposition") // 다운로드시 heaeder 정보 전달
                 .maxAge(3600);
     } // func end
 } // class end
