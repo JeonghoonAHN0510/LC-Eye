@@ -5,6 +5,7 @@ import { Pagination } from "@mui/material";
 import { Select, Option } from "@mui/joy";
 import ProjectListTable from "./ProjectListTable.jsx";
 import { useLoading } from "../../contexts/LoadingContext.jsx";
+import Button from '@mui/joy/Button';
 
 export default function ProjectResult(props) {
     const { pjno, isOpen } = props;
@@ -13,6 +14,7 @@ export default function ProjectResult(props) {
     const [lciInputData, setLciInputData] = useState([]);
     const [lciOutputData, setLciOutputData] = useState([]);
     const [rowsPerPage, setRowsPerPage] = useState(100);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     const [inputPage, setInputPage] = useState(1);
     const [outputPage, setOutputPage] = useState(1);
@@ -36,7 +38,7 @@ export default function ProjectResult(props) {
                 ? res.data.outputList
                 : [];
 
-            
+
             const sortByFnameAsc = (arr) =>
                 [...arr].sort((a, b) =>
                     String(a?.fname ?? "").localeCompare(String(b?.fname ?? ""))
@@ -157,10 +159,84 @@ export default function ProjectResult(props) {
         }
     };
 
+    // Excel download =============================================
+    const downloadExcel = async () => {
+        if (!pjno || isDownloading) return;
+        setIsDownloading(true);
+        try {
+            const res = await axios.get(
+                "http://localhost:8080/api/excel/download",
+                {
+                    params: { pjno },
+                    withCredentials: true,
+                    responseType: "blob",
+                }
+            );
+
+            const contentType =
+                (res.headers && res.headers["content-type"]) || "";
+            const lowerContentType = contentType.toLowerCase();
+            const isTextResponse =
+                res.data instanceof Blob &&
+                (lowerContentType.includes("application/json") ||
+                    lowerContentType.includes("text/"));
+
+            if (isTextResponse) {
+                try {
+                    const text = (await res.data.text()).trim();
+                    if (text === "true") {
+                        return;
+                    }
+                    if (text === "false") {
+                        alert("다운로드 실패");
+                        return;
+                    }
+                    const parsed = text ? JSON.parse(text) : null;
+                    if (parsed === true) {
+                        return;
+                    }
+                } catch (err) {
+                    console.error("[downloadExcel json parse error]", err);
+                }
+                alert("다운로드 실패");
+                return;
+            }
+
+            const blob = new Blob([res.data], {
+                type: contentType || "application/vnd.ms-excel",
+            });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = downloadUrl;
+            link.setAttribute("download", `project-${pjno}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            if (error?.response?.status === 403) {
+                alert("다운로드 실패");
+            } else {
+                console.error("[downloadExcel error]", error);
+                alert("다운로드 실패");
+            }
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
     // return =======================================================
     return (
         <>
             <div className="projectResultTopBar">
+                <Button
+                    variant="outlined"
+                    color="success"
+                    loading={isDownloading}
+                    onClick={downloadExcel}
+                >
+                    엑셀 다운로드
+                </Button>
                 <div>조회 행 수</div>
                 <div style={{ width: "10rem" }}>
                     <Select
@@ -181,6 +257,7 @@ export default function ProjectResult(props) {
                         <Option value="150">150개</Option>
                         <Option value="200">200개</Option>
                     </Select>
+
                 </div>
             </div>
             <div className="projectResultBox">
