@@ -1,18 +1,6 @@
 package lceye.service;
 
-import jakarta.servlet.http.HttpServletResponse;
-import lceye.model.dto.ExcelProjectDto;
-import lceye.model.mapper.ExcelProjectMapper;
-import lceye.model.repository.ProjectRepository;
-import lceye.model.repository.ProjectResultFileRepository;
-import lceye.util.FileUtil;
-import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +13,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lceye.model.dto.ExcelProjectDto;
+import lceye.model.mapper.ExcelProjectMapper;
+import lceye.model.repository.ProjectRepository;
+import lceye.model.repository.ProjectResultFileRepository;
+import lceye.util.aop.DistributedLock;
+import lceye.util.file.FileUtil;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -45,10 +42,10 @@ public class ExcelService {
      * @param response 엑셀 다운로드용 응답
      * @author OngTK
      */
+    @DistributedLock(lockKey = "#pjno")
     public boolean downloadExcel(String token, int pjno, HttpServletResponse response) {
         System.out.println("ExcelService.downloadExcel");
         System.out.println("token = " + token + ", pjno = " + pjno + ", response = " + response);
-
         // [1] 로그인 토큰 확인
         // [1.1] 로그인 토큰이 비어있으면 false
         if (!jwtService.validateToken(token)) return false;
@@ -57,7 +54,6 @@ public class ExcelService {
         int cno = jwtService.getCnoFromClaims(token);
         String mrole = jwtService.getRoleFromClaims(token);
         System.out.println("[Excel-01 Token Check] " + mno + " / " + cno + " / " + mrole);
-
         // [2] pjno 유효성 검사·존재여부 확인
         // [2.1] pjno 유효성 검사
         if (pjno == 0) return false;
@@ -128,7 +124,7 @@ public class ExcelService {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
-        }
+        } // try-catch end
     } // func end
 
 

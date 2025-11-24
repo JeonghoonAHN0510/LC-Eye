@@ -8,6 +8,7 @@ import lceye.model.mapper.ProjectMapper;
 import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.UnitsRepository;
+import lceye.util.aop.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -194,14 +195,14 @@ public class ProjectService {
     /**
      * [PJ-04] 프로젝트 수정
      */
-    public ProjectDto updateProject(String token, ProjectDto projectDto){
+    @DistributedLock(lockKey = "#pjno")
+    public ProjectDto updateProject(String token, ProjectDto projectDto, int pjno){
         // [4.1] Token, pjNo가 없으면 null로 반환
         if(!jwtService.validateToken(token)) return null;
-        if(projectDto.getPjno() == 0) return null;
         // [4.2] Token이 있으면, 토큰에서 로그인한 사용자 정보 추출
         int mno = jwtService.getMnoFromClaims(token);
         // [4.3] projectEntity 조회
-        Optional<ProjectEntity> optional = projectRepository.findById(projectDto.getPjno());
+        Optional<ProjectEntity> optional = projectRepository.findById(pjno);
         // [4.4] projectEntity 가 존재하는 지 확인
         if(optional.isPresent()){
             // [4.5] projectEntity를 optinal에서 꺼냄
@@ -215,8 +216,7 @@ public class ProjectService {
             entity.setUnitsEntity(unitsRepository.findById(projectDto.getUno()).get());
             // [4.8] 결과 반환
             return entity.toDto();
-        }
+        } // if end
         return null;
     }// func end
-
 } // class end

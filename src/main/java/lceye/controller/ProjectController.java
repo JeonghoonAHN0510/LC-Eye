@@ -1,9 +1,8 @@
 package lceye.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lceye.model.dto.ProjectDto;
 import lceye.service.ProjectService;
+import lceye.util.aop.SessionToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,13 +23,8 @@ public class ProjectController {
      * @author OngTK
      */
     @PostMapping
-    public ResponseEntity<?> saveProject(HttpServletRequest request,
+    public ResponseEntity<?> saveProject(@SessionToken String token,
                                          @RequestBody ProjectDto projectDto){
-        HttpSession session = request.getSession(false);
-        String token = null;
-        if (session != null){
-            token = (String) session.getAttribute("loginMember");
-        } // if end
         ProjectDto result;
         // [1.1] 쿠키 내 토큰이 존재
         if(token!=null){
@@ -57,12 +51,7 @@ public class ProjectController {
      * @author OngTK
      */
     @GetMapping("/all")
-    public ResponseEntity<?> readAllProject(HttpServletRequest request){
-        HttpSession session = request.getSession(false);
-        String token = null;
-        if (session != null){
-            token = (String) session.getAttribute("loginMember");
-        } // if end
+    public ResponseEntity<?> readAllProject(@SessionToken String token){
         if (token != null){
             return ResponseEntity.ok(projectService.readAllProject(token));
         } else {
@@ -92,13 +81,8 @@ public class ProjectController {
      * @quthor OngTK
      */
     @GetMapping
-    public ResponseEntity<?> readProject(HttpServletRequest request,
+    public ResponseEntity<?> readProject(@SessionToken String token,
                                          @RequestParam int pjno){
-        HttpSession session = request.getSession(false);
-        String token = null;
-        if (session != null){
-            token = (String) session.getAttribute("loginMember");
-        } // if end
         if (token != null){
             return ResponseEntity.ok(projectService.readProject(token, pjno));
         } else {
@@ -109,7 +93,7 @@ public class ProjectController {
     // 플러터용 개별조회
     @GetMapping("/flutter")
     public ResponseEntity<?> flutterReadProject(@RequestHeader(value = "Authorization" ,required = false) String header,
-                                         @RequestParam int pjno){
+                                                @RequestParam int pjno){
         if (header != null && header.startsWith("Bearer ")){
             String token = header.substring(7);
             return ResponseEntity.ok(projectService.readProject(token,pjno));
@@ -124,16 +108,12 @@ public class ProjectController {
      * @author OngTK
      */
     @PutMapping
-    public ResponseEntity<?> updateProject(HttpServletRequest request,
+    public ResponseEntity<?> updateProject(@SessionToken String token,
                                            @RequestBody ProjectDto projectDto){
-        HttpSession session = request.getSession(false);
-        String token = null;
-        if (session != null){
-            token = (String) session.getAttribute("loginMember");
-        } // if end
         ProjectDto result = null;
         if (token != null){
-            result = projectService.updateProject(token, projectDto);
+            int pjno = projectDto.getPjno();
+            result = projectService.updateProject(token, projectDto, pjno);
         } // if end
         if(result == null){
             return ResponseEntity.status(403).body("잘못된 요청입니다.");

@@ -4,7 +4,8 @@ import lceye.model.dto.ProcessInfoDto;
 import lceye.model.dto.ProjectDto;
 import lceye.model.dto.UnitsDto;
 import lceye.model.repository.ProjectRepository;
-import lceye.util.FileUtil;
+import lceye.util.aop.DistributedLock;
+import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.springframework.stereotype.Service;
@@ -35,24 +36,15 @@ public class ExchangeService {
      * @return boolean
      * @author 민성호
      */
-    public boolean saveInfo(Map<String, Object> exchangeList, String token) {
+    @DistributedLock(lockKey = "#pjno")
+    public boolean saveInfo(Map<String, Object> exchangeList, String token, int pjno) {
         System.out.println("exchangeList = " + exchangeList + ", token = " + token);
         if (!jwtService.validateToken(token)) return false;
         System.out.println("토큰확인 : " + jwtService.validateToken(token));
         int cno = jwtService.getCnoFromClaims(token);
         int mno = jwtService.getMnoFromClaims(token);
-        Object pjnoObject = exchangeList.get("pjno");
-        int pjno = 0;
-        if (pjnoObject instanceof Number) {
-            pjno = ((Number) pjnoObject).intValue();
-        }
+
         System.out.println("pjno = " + pjno);
-        System.out.println("pjnoObject = " + pjnoObject);
-//        int pjNumber = 0;
-//        if (pjno instanceof Number) {
-//            pjNumber = ((Number) pjno).intValue();
-//        }
-//        System.out.println(pjNumber);
         ProjectDto pjDto = projectService.findByPjno(pjno);
         if (pjDto == null) return false;
         UnitsDto unitsDto = unitsService.findByUno(pjDto.getUno());
@@ -210,6 +202,7 @@ public class ExchangeService {
      * @return boolean
      * @author 민성호
      */
+    @DistributedLock(lockKey = "#pjno")
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
@@ -273,6 +266,7 @@ public class ExchangeService {
      * @return List<Map < Strig, Object>>
      * @author OngTK
      */
+    @DistributedLock(lockKey = "#pjno")
     public Map<String, Object> readIOInfo(int pjno) {
         // [1] pjno로 project 테이블에 pjfile이 존재하는지 확인
         if (projectRepository.existsById(pjno)) {
@@ -292,16 +286,15 @@ public class ExchangeService {
                     InputList.add(map);
                 } else {
                     OutputList.add(map);
-                }
-            }
+                } // if end
+            } // for end
             // [6] 결과 반환
             Map<String, Object> result = new HashMap<>();
             result.put("inputList", InputList);
             result.put("outputList", OutputList);
 
             return result;
-        }
+        } // if end
         return null;
-    } // fucn end
-
+    } // func end
 }// class end

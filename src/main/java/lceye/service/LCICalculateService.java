@@ -3,32 +3,33 @@ package lceye.service;
 import lceye.model.dto.CalculateResultDto;
 import lceye.model.entity.ProjectEntity;
 import lceye.model.entity.ProjectResultFileEntity;
-import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.ProjectResultFileRepository;
-import lceye.util.FileUtil;
+import lceye.util.aop.DistributedLock;
+import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class LCICalculateService {
 
     private final ProjectRepository projectRepository;
+    private final JwtService jwtService;
     private final FileUtil fileUtil;
     private final ProjectResultFileRepository projectResultFileRepository;
-    private final MemberRepository memberRepository;
 
     /**
      * [LCI-01] LCI 계산하기
      */
-    public boolean calcLCI(int pjno) {
+    @DistributedLock(lockKey = "#pjno")
+    public boolean calcLCI(int pjno, String token) {
         // [1] pjno를 기반으로 projectExchange json 파일명을 찾음
         ProjectEntity projectEntity = projectRepository.getReferenceById(pjno);
         String projectExchangeFileName = projectEntity.getPjfilename();
@@ -109,7 +110,8 @@ public class LCICalculateService {
         // [9] 위의 자료들로 JSON으로 바꾸기 위한 최종 Map 구성
         Map<String, Object> resultJson = buildResultJson(projectEntity, readFileData, results);
         // [10] 파일명 만들기
-        String resultFileName = makeResultFileName(projectEntity); // cno_pjno_result_yyyyMMdd_HHmm.json
+        int cno = jwtService.getCnoFromClaims(token);
+        String resultFileName = makeResultFileName(projectEntity, cno); // cno_pjno_result_yyyyMMdd_HHmm.json
         // [11] 파일 저장하기 ( type, 파일명 ,JSON으로 변환할 데이터)
         fileUtil.uploadFile("result", resultFileName, resultJson);
 
@@ -124,7 +126,7 @@ public class LCICalculateService {
             return true;
         } else {
             return false;
-        }
+        } // if end
     } // func end
 
     /**
@@ -330,8 +332,7 @@ public class LCICalculateService {
      * @return filename 확장자(json)을 제외한 파일명(cno_pjno_result_yyyyMMdd_HHmm.json)
      * @author OngTK
      */
-    private String makeResultFileName(ProjectEntity project) {
-        int cno = memberRepository.getReferenceById(project.getMno()).getCompanyEntity().getCno();
+    private String makeResultFileName(ProjectEntity project, int cno) {
         int pjno = project.getPjno();
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
         return cno + "_" + pjno + "_result_" + now;
@@ -342,6 +343,7 @@ public class LCICalculateService {
      *
      * @author OngTK
      */
+    @DistributedLock(lockKey = "#pjno")
     public Map<String, Object> readLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
         String fileName = projectResultFileRepository.returnFilename(pjno);
@@ -366,7 +368,6 @@ public class LCICalculateService {
         result.put("outputList", outputList);
 
         return result;
-
     } // func end
 
     /**
