@@ -34,7 +34,6 @@ public class ExcelController {
 
         // [3] 결과 반환
         if(!result) return ResponseEntity.status(403).body("잘못된 요청입니다.");
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok().build();
     } // func end
-
 } // class end
