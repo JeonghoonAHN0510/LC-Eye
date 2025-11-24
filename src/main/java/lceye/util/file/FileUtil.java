@@ -168,7 +168,6 @@ public class FileUtil {
         return list;
     } // func end
 
-
     /**
      * [4] 파일 삭제
      * @param type exchange/result
