@@ -8,6 +8,7 @@ import java.io.FilenameFilter;
 import java.util.*;
 
 @Service
+@Deprecated
 public class Unused_FileService {
 
     private static final String path = "./src/main/resources/json/";
