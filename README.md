@@ -1,6 +1,6 @@
 -----
 
-# 👀 LC-Eye – MSA 지향형 경량형 LCI(Life Cycle Inventory) 계산 시스템
+# 👀 LC-Eye – 경량형 LCI(Life Cycle Inventory) 계산 시스템
 
 > **Redis Pub/Sub 기반의 다중 서버 아키텍처와 React 프론트엔드를 도입한 환경영향평가 플랫폼** <br>
 > 🔗 [프로젝트 노션 바로가기](https://lceye.notion.site/LC-Eye-2a2094d4983480369aa4fe1a6163688f) <br>
