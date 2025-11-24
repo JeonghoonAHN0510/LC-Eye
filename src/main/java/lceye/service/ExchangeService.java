@@ -27,6 +27,7 @@ public class ExchangeService {
     private final UnitsService unitsService;
     private final ProcessInfoService processInfoService;
     private final ProjectRepository projectRepository;
+    private final GeminiService geminiService;
 
     /**
      * 투입물·산출물 저장/수정
@@ -40,7 +41,6 @@ public class ExchangeService {
     public boolean saveInfo(Map<String, Object> exchangeList, String token, int pjno) {
         System.out.println("exchangeList = " + exchangeList + ", token = " + token);
         if (!jwtService.validateToken(token)) return false;
-        System.out.println("토큰확인 : " + jwtService.validateToken(token));
         int cno = jwtService.getCnoFromClaims(token);
         int mno = jwtService.getMnoFromClaims(token);
 
@@ -78,7 +78,6 @@ public class ExchangeService {
         String fileName;
         if (pjDto.getPjfilename() != null && !pjDto.getPjfilename().isEmpty()) { // json 파일명 존재할때
             Map<String, Object> oldJsonFile = fileUtil.readFile("exchange", pjDto.getPjfilename());
-            System.out.println("oldJsonFile = " + oldJsonFile);
             exchangeList.put("createdate", oldJsonFile.get("createdate"));
             exchangeList.put("updatedate", now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             DateTimeFormatter change = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -90,10 +89,8 @@ public class ExchangeService {
             fileName = name + now.format(formatter);
         }// if end
         boolean result = fileUtil.uploadFile("exchange", fileName, exchangeList);
-        System.out.println("result = " + result);
         if (result) {
             boolean results = projectService.updatePjfilename(fileName, pjno);
-            System.out.println("results = " + results);
             if (results) return true;
         }// if end
         return false;
@@ -137,7 +134,7 @@ public class ExchangeService {
         returnSet.removeAll(requestMap.keySet());
         if (!returnSet.isEmpty() && returnSet != null) {
             List<String> returnList = new ArrayList<>(returnSet);
-            Map<String, Set<String>> similarityMap = similarity(returnList);
+            Map<String, Set<String>> similarityMap = geminiService.similarity(returnList);
             requestMap.putAll(similarityMap);
         }// if end
         return new HashMap<>(requestMap);
@@ -160,14 +157,11 @@ public class ExchangeService {
         List<String> pjnoList = projectDtos.stream().map(ProjectDto::getPjfilename).toList();
         for (String fileName : pjnoList) {
             List<Map<String, Object>> list = fileUtil.searchFile(fileName);
-            System.out.println("list = " + list);
             for (Map<String, Object> map : list) {
                 Object obj = map.get("exchanges");
-                System.out.println("obj = " + obj);
                 if (obj instanceof List<?> rawList) {
                     for (Object exchangeObj : rawList) {
                         if (exchangeObj instanceof Map exchange) {
-                            System.out.println("exchange = " + exchange);
                             Object pjeNameObj = exchange.get("pjename");
                             Object pNameObj = exchange.get("pname");
 
@@ -206,10 +200,8 @@ public class ExchangeService {
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
-        System.out.println("dto = " + dto);
         if (dto != null) {
             boolean result = fileUtil.deleteFile("exchange", dto.getPjfilename());
-            System.out.println("result = " + result);
             if (result) {
                 boolean results = projectService.deletePjfilename(pjno);
                 if (results) return true;
@@ -225,37 +217,35 @@ public class ExchangeService {
      * @return Map<String, Set < String>>
      * @author 민성호
      */
-    public Map<String, Set<String>> similarity(List<String> clientInput) {
-        List<String> transInput = translationService.TransInput(clientInput);
-        System.out.println("transInput = " + transInput);
-        List<ProcessInfoDto> processInfoEntities = processInfoService.getProcessInfo();
-        JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
-        final double benchmark = 0.90; // 90% 기준
-        Map<String, Set<String>> resultMatches = new HashMap<>();
-        for (int i = 0; i < transInput.size(); i++) {
-            String client = clientInput.get(i);
-            String input = transInput.get(i);
-            Set<String> matches = new HashSet<>();
-            if ("Routing".equals(input)) input = "diesel";
-            String lowerInput = input.toLowerCase();
-            for (ProcessInfoDto dto : processInfoEntities) {
-                String lowerPcdesc = dto.getPcdesc().toLowerCase();
-                String lowerPcname = dto.getPcname().toLowerCase();
-                Double scoreName = similarity.apply(lowerInput, lowerPcname);
-                Double scoreDesc = similarity.apply(lowerInput, lowerPcdesc);
-                boolean contains = lowerPcname.contains(lowerInput);
-                boolean containsDesc = lowerPcdesc.contains(lowerInput);
-                if (scoreName >= benchmark || contains || scoreDesc >= benchmark || containsDesc) { // 유사도 90프로 이상
-                    matches.add(dto.getPcname());
-                }// if end
-            }// for end
-            if (!matches.isEmpty()) {
-                resultMatches.put(client, matches);
-            }// if end
-        }// for end
-        System.out.println("resultMatches : " + resultMatches);
-        return new HashMap<>(resultMatches);
-    }// func end
+    //public Map<String, Set<String>> similarity(List<String> clientInput) {
+    //    List<String> transInput = translationService.TransInput(clientInput);
+    //    List<ProcessInfoDto> processInfoEntities = processInfoService.getProcessInfo();
+    //    JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
+    //    final double benchmark = 0.90; // 90% 기준
+    //    Map<String, Set<String>> resultMatches = new HashMap<>();
+    //    for (int i = 0; i < transInput.size(); i++) {
+    //        String client = clientInput.get(i);
+    //        String input = transInput.get(i);
+    //        Set<String> matches = new HashSet<>();
+    //        if ("Routing".equals(input)) input = "diesel";
+    //        String lowerInput = input.toLowerCase();
+    //        for (ProcessInfoDto dto : processInfoEntities) {
+    //            String lowerPcdesc = dto.getPcdesc().toLowerCase();
+    //            String lowerPcname = dto.getPcname().toLowerCase();
+    //            Double scoreName = similarity.apply(lowerInput, lowerPcname);
+    //            Double scoreDesc = similarity.apply(lowerInput, lowerPcdesc);
+    //            boolean contains = lowerPcname.contains(lowerInput);
+    //            boolean containsDesc = lowerPcdesc.contains(lowerInput);
+    //            if (scoreName >= benchmark || contains || scoreDesc >= benchmark || containsDesc) { // 유사도 90프로 이상
+    //                matches.add(dto.getPcname());
+    //            }// if end
+    //        }// for end
+    //        if (!matches.isEmpty()) {
+    //            resultMatches.put(client, matches);
+    //        }// if end
+    //    }// for end
+    //    return new HashMap<>(resultMatches);
+    //}// func end
 
     /**
      * [IO-03] 투입물·산출물 정보 조회
@@ -280,9 +270,7 @@ public class ExchangeService {
             List<Map<String, Object>> InputList = new ArrayList<>();
             List<Map<String, Object>> OutputList = new ArrayList<>();
             for (Map<String, Object> map : exchanges) {
-                System.out.println(map);
                 if ((boolean) map.get("isInput")) {
-                    System.out.println(true);
                     InputList.add(map);
                 } else {
                     OutputList.add(map);
