@@ -132,7 +132,7 @@ public class ExchangeService {
         }// for end
         Set<String> returnSet = new HashSet<>(inputSet);
         returnSet.removeAll(requestMap.keySet());
-        if (!returnSet.isEmpty() && returnSet != null) {
+        if (returnSet != null && !returnSet.isEmpty()) {
             List<String> returnList = new ArrayList<>(returnSet);
             Map<String, Set<String>> similarityMap = geminiService.similarity(returnList);
             requestMap.putAll(similarityMap);
