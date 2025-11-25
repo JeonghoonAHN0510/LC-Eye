@@ -6,6 +6,7 @@ import lceye.model.dto.ProjectDto;
 import lceye.model.dto.UnitsDto;
 import lceye.model.repository.ProjectRepository;
 import lceye.aop.DistributedLock;
+import lceye.model.repository.ProjectResultFileRepository;
 import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class ExchangeService {
     private final FileUtil fileUtil;
     private final JwtService jwtService;
     private final ProjectService projectService;
-    private final TranslationService translationService;
+    private final ProjectResultFileService projectResultFileService;
     private final UnitsService unitsService;
     private final ProcessInfoService processInfoService;
     private final ProjectRepository projectRepository;
@@ -204,11 +205,16 @@ public class ExchangeService {
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
-        if (dto != null) {
+        String LciFileName = projectResultFileService.getFileName(pjno);
+        System.out.println("LciFileName = " + LciFileName);
+        if (dto != null || LciFileName != null) {
             boolean result = fileUtil.deleteFile("exchange", dto.getPjfilename());
-            if (result) {
+            boolean result2 = fileUtil.deleteFile("result", LciFileName);
+            System.out.println("result2 = " + result2);
+            if (result && result2) {
                 boolean results = projectService.deletePjfilename(pjno);
-                if (results) return true;
+                projectResultFileService.deleteFileName(pjno);
+                return results;
             }// if end
         }// if end
         return false;
@@ -268,6 +274,8 @@ public class ExchangeService {
             String filename = projectRepository.findById(pjno).get().getPjfilename();
             // [3] filename으로 json 파일 불러오기
             Map<String, Object> inOutInfo = fileUtil.readFile("exchange", filename);
+            System.out.println("inOutInfo = " + inOutInfo);
+            if (inOutInfo == null || inOutInfo.isEmpty()) return null;
             // [4] exchanges list 가져오기
             List<Map<String, Object>> exchanges = (List<Map<String, Object>>) inOutInfo.get("exchanges");
             // [5] exchanges 에서 input과 output 리스트를 각각 만들기
