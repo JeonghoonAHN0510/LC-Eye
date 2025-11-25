@@ -110,8 +110,4 @@ public class ExchangeController {
         return ResponseEntity.ok(result);
     } // func end
 
-    @PostMapping("/gemini")
-    public ResponseEntity<?> test(@RequestBody List<String> clientInput){
-        return ResponseEntity.ok(geminiService.similarity(clientInput));
-    }// func end
 } // class end

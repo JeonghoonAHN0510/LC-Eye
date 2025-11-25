@@ -68,6 +68,9 @@ export default function ProjectExchange(props) {
         },
     ];
 
+    // 제미나이 데이터 상태관리
+    const [isMatch, setIsMatch] = useState(false);
+
     // WebSocket 상태관리
     const [socket, setSocket] = useState(null);
 
@@ -152,16 +155,45 @@ export default function ProjectExchange(props) {
                 console.log(data);
                 if(data.type === 'gemini'){
                     const geminiData = data.data;
+                    // Gemini가 처리한 항목 Key Set
 
                     if(geminiData && typeof geminiData === 'object' && !Array.isArray(geminiData)){
-                        const formatted = Object.entries(geminiData).map( ([key,value]) => ({
-                            key,
-                            value : Array.isArray(value) ? value : [value],
-                        })) // map end
-                        setMatchData(prevMatchData => {
-                            const prev = Array.isArray(prevMatchData) ? prevMatchData : [];
-                            return [...prev , ...formatted];
+                        const formetted = new Map(
+                            Object.entries(geminiData).map( ([key,value]) => [
+                                key,
+                                Array.isArray(value) ? value : [value]
+                            ])
+                        )
+                    setMatchData(prevMatchData => {
+                        const nextMatchData = new Map();
+                        let pendingCount = 0; // 아직 매칭 중인 항목 카운트
+
+                        // 기존 matchData 순회 
+                        prevMatchData.forEach(item => {
+                            const key = item.key;
+                            let currentItem = item;
+                            
+                            if (formetted.has(key)) {
+                                // Gemini 결과가 있으면 덮어쓰기
+                                currentItem = { key, value: formetted.get(key) };
+                            } // if end
+                            nextMatchData.set(key, currentItem);
+                            
+                            // 업데이트된 항목이 여전히 "매칭 중..."인지 확인
+                            if (currentItem.value && currentItem.value[0] === "매칭 중...") {
+                                pendingCount++;
+                            }// if end
                         });
+
+                        // 아직 매칭 중인 항목이 남아있는지 확인하여 isMatch 상태 업데이트
+                        if (pendingCount === 0) {
+                            setIsMatch(false);
+                            // 모든 작업 완료 시 로딩 UI 해제 
+                            // hideLoading(loadingId); 
+                        }// if end
+                        
+                        return Array.from(nextMatchData.values());
+                    }); // setMatchData end
                     }// if end
                 }// if end
             }catch(e){
@@ -345,6 +377,8 @@ export default function ProjectExchange(props) {
         // 소켓 열기
         openWebSocket(mno);
         const loadingId = showLoading("최적화 매칭중입니다...");
+        setIsMatch(true);
+        setOpenModal(true);
         setLoading(true);
         const allPjenames = [...inputRows, ...outputRows].map(
             (row) => row.pjename
@@ -358,6 +392,7 @@ export default function ProjectExchange(props) {
         }
 
         await matchIO(allPjenames);
+        setLoading(false);
         hideLoading(loadingId);
     };
 
@@ -366,6 +401,7 @@ export default function ProjectExchange(props) {
         // 소켓 열기
         openWebSocket(mno);
         const loadingId = showLoading("선택된 항목 매칭중입니다...");
+        setIsMatch(true);
         setOpenModal(true);
         setLoading(true);
 
@@ -393,6 +429,7 @@ export default function ProjectExchange(props) {
         }
 
         await matchIO(pjenames);
+        setLoading(false);
         hideLoading(loadingId);
     };
 
@@ -405,6 +442,7 @@ export default function ProjectExchange(props) {
     };
 
     const handleSaveMatch = () => {
+        setIsMatch(false);
         closeWebSocket();
         Object.entries(checkedItems).forEach(([key, value]) => {
             setInputRows((prev) =>
