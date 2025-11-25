@@ -135,7 +135,7 @@ public class ExchangeService {
         returnSet.removeAll(requestMap.keySet());
         if (returnSet != null && !returnSet.isEmpty()) {
             // 미매칭 항목을 '매칭 중' 상태로 requestMap에 추가
-            Set<String> matchingInProgressValue = Set.of("매칭 중...");
+            Set<String> matchingInProgressValue = Set.of("AI 매칭 중...");
             List<String> returnList = new ArrayList<>(returnSet);
             for (String pjeName : returnList) {
                 requestMap.put(pjeName, matchingInProgressValue);

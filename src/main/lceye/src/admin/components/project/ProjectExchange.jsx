@@ -180,7 +180,7 @@ export default function ProjectExchange(props) {
                             nextMatchData.set(key, currentItem);
 
                             // 업데이트된 항목이 여전히 "매칭 중..."인지 확인
-                            if (currentItem.value && currentItem.value[0] === "매칭 중...") {
+                            if (currentItem.value && currentItem.value[0] === "AI 매칭 중...") {
                                 pendingCount++;
                             }// if end
                         });
