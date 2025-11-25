@@ -366,6 +366,7 @@ export default function ProjectExchange(props) {
         // 소켓 열기
         openWebSocket(mno);
         const loadingId = showLoading("선택된 항목 매칭중입니다...");
+        setOpenModal(true);
         setLoading(true);
 
         const selectedInputs = inputRows.filter((r) =>
@@ -404,6 +405,7 @@ export default function ProjectExchange(props) {
     };
 
     const handleSaveMatch = () => {
+        closeWebSocket();
         Object.entries(checkedItems).forEach(([key, value]) => {
             setInputRows((prev) =>
                 prev.map((row) =>
@@ -489,7 +491,26 @@ export default function ProjectExchange(props) {
         if (!effectivePjno) {
             alert("프로젝트 번호를 선택해주세요.");
             return;
-        }
+        }// if end
+
+        const allRows = [...inputRows, ...outputRows];
+        const checkFields = ['pjename', 'pjeamount', 'uname', 'uno'];
+
+        const resultFields = allRows.some( row => 
+            checkFields.some( field => 
+                !row[field] || String(row[field]).trim() === "" )
+        );
+
+        if(resultFields){
+            alert("모든 항목의 필수 정보(투입·산출물명, 양, 단위)를 입력해주세요.");
+            return;
+        }// if end
+
+        const outputCheck = outputRows.some( row => !row.pname || row.pname.trim() === "");
+        if(!outputCheck){
+            alert("산출물: 프로세스명 공란 항목 필수");
+            return;
+        }// if end
 
         const payload = {
             pjno: effectivePjno,
@@ -513,7 +534,7 @@ export default function ProjectExchange(props) {
         } catch (e) {
             console.error("[saveIOInfo error]", e);
         }
-    };
+    };// f end
 
     const fetchProjectExchange = async (pjnoParam) => {
         const res = await axios.get("http://localhost:8080/api/inout", {
