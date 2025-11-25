@@ -32,7 +32,7 @@ public class ExcelService {
     private final ExcelProjectMapper excelProjectMapper;
     private final ProjectRepository projectRepository;
     private final FileUtil fileUtil;
-    private final ProjectResultFileRepository projectResultFileRepository;
+    private final ProjectResultFileService projectResultFileService;
 
     /**
      * [Excel-01] 엑셀 다운로드
@@ -94,7 +94,7 @@ public class ExcelService {
             }
 
             // [5] pjno로 projcetResultfile 테이블의 가장 최근의 레코드 존재여부 확인
-            String projectResultFileName = projectResultFileRepository.returnFilename(pjno);
+            String projectResultFileName = projectResultFileService.getFileName(pjno);
             // [5.1] 조회되는 파일이 없다면, 현재 상태의 엑셀 출력
             if (projectResultFileName == null || projectResultFileName.isEmpty() || projectResultFileName.isBlank()) {
                 workbook.write(response.getOutputStream());

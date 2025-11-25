@@ -28,7 +28,7 @@ public class LCICalculateService {
     private final JwtService jwtService;
     private final FileUtil fileUtil;
     private final ProjectResultFileRepository projectResultFileRepository;
-    private final MemberRepository memberRepository;
+    private final ProjectResultFileService projectResultFileService;
     private final RedisTemplate<String, Object> processRedisTemplate;
 
     /**
@@ -359,7 +359,7 @@ public class LCICalculateService {
     @DistributedLock(lockKey = "#pjno")
     public Map<String, Object> readLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
-        String fileName = projectResultFileRepository.returnFilename(pjno);
+        String fileName = projectResultFileService.getFileName(pjno);
         if (fileName == null) return null;
         // [2] 파일명으로 파일 찾아오기
         Map<String, Object> file = fileUtil.readFile("result", fileName);
@@ -390,7 +390,7 @@ public class LCICalculateService {
      */
     public String checkLCI(int pjno) {
         // [1] pjno로 project_resultfile 테이블에서 가장 최신의 레코드를 찾고, 파일명을 확인
-        String fileName = projectResultFileRepository.returnFilename(pjno);
+        String fileName = projectResultFileService.getFileName(pjno);
         // [2] 조회 되는게 없으면 null 반환
         if (fileName.isBlank()) return null;
         // [3] 조회된 String을 반환
