@@ -1,6 +1,7 @@
 package lceye.controller;
 
 import lceye.service.ExchangeService;
+import lceye.service.GeminiService;
 import lceye.service.TranslationService;
 import lceye.util.aop.SessionToken;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class ExchangeController {
     /**
      * 서비스 불러오기
      */
-    private final TranslationService translationService;
+    private final GeminiService geminiService;
     private final ExchangeService exchangeService;
 
     //@PostMapping("/auto") // localhost:8080/api/inout/auto
@@ -108,4 +109,9 @@ public class ExchangeController {
         }
         return ResponseEntity.ok(result);
     } // func end
+
+    @PostMapping("/gemini")
+    public ResponseEntity<?> test(@RequestBody List<String> clientInput){
+        return ResponseEntity.ok(geminiService.similarity(clientInput));
+    }// func end
 } // class end

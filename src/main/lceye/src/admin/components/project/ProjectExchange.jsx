@@ -28,6 +28,9 @@ export default function ProjectExchange(props) {
         (state) => state.project?.selectedProject
     );
 
+    // Redux에서 mno 값 가져오기
+    const mno = useSelector((state) => state.admin.isLogin.mno);
+
     // 프로젝트 번호 결정: props → Redux → null 순으로 우선순위 적용
     const effectivePjno = pjno ?? selectedProject?.pjno ?? null;
 
@@ -64,6 +67,9 @@ export default function ProjectExchange(props) {
             isInput: false, // output 구분
         },
     ];
+
+    // WebSocket 상태관리
+    const [socket, setSocket] = useState(null);
 
     // 화면에서 실시간 편집되고 있는 Input 행들
     const [inputRows, setInputRows] = useState(createInitialInputRows);
@@ -118,6 +124,69 @@ export default function ProjectExchange(props) {
         label: u.unit,       // 표시 이름
         group: u.ugname,     // 단위 그룹명 (예: Length, Mass)
     }));
+
+    const openWebSocket = (mno) => {
+        if(!mno){
+            console.error("mno 없어 소켓을 열 수 없습니다.");
+            return;
+        }// if end
+        if(socket){
+            console.log("이미 소켓이 연결되어 있습니다.");
+            return;
+        }// if end
+        const ws = new WebSocket('ws://localhost:8080/ws/socket');
+        ws.onopen = () => {
+            console.log(`소켓 오픈: ${mno}`);
+            const message = JSON.stringify({
+                type: "message",
+                mno: mno
+            });
+            ws.send(message);
+            console.log("소켓오픈 메시지 전송");
+        };
+
+        ws.onmessage = (event) => {
+            console.log("메시지 수신",event.data);
+            try{
+                const data = JSON.parse(event.data);
+                console.log(data);
+                if(data.type === 'gemini'){
+                    const geminiData = data.data;
+
+                    if(geminiData && typeof geminiData === 'object' && !Array.isArray(geminiData)){
+                        const formatted = Object.entries(geminiData).map( ([key,value]) => ({
+                            key,
+                            value : Array.isArray(value) ? value : [value],
+                        })) // map end
+                        setMatchData(prevMatchData => {
+                            const prev = Array.isArray(prevMatchData) ? prevMatchData : [];
+                            return [...prev , ...formatted];
+                        });
+                    }// if end
+                }// if end
+            }catch(e){
+                console.log(e);
+            }// try end
+        };
+
+        ws.onclose = () => {
+            console.log(`소켓 종료: ${pjno}`);
+            setSocket(null); // 연결이 닫히면 상태 초기화
+        };
+
+        ws.onerror = (error) => {
+            console.error("소켓 에러:", error);
+        };
+
+        setSocket(ws);
+    }// f end
+
+    // WebSocket 연결 해제 함수 =============================================================
+    const closeWebSocket = () => {
+        if (socket) {
+            socket.close();
+        }
+    };
 
     // 행 데이터 정규화 함수 =============================================================
     const normalizeRows = (rows = []) =>
@@ -273,6 +342,8 @@ export default function ProjectExchange(props) {
 
     // 매칭 전체 처리 함수 =============================================================
     const matchAllIO = async () => {
+        // 소켓 열기
+        openWebSocket(mno);
         const loadingId = showLoading("최적화 매칭중입니다...");
         setLoading(true);
         const allPjenames = [...inputRows, ...outputRows].map(
@@ -292,6 +363,8 @@ export default function ProjectExchange(props) {
 
     // 매칭 선택 처리 함수 =============================================================
     const matchSelectedIO = async () => {
+        // 소켓 열기
+        openWebSocket(mno);
         const loadingId = showLoading("선택된 항목 매칭중입니다...");
         setLoading(true);
 
@@ -760,7 +833,10 @@ export default function ProjectExchange(props) {
         <>
             <Modal
                 open={openModal}
-                onClose={() => setOpenModal(false)}
+                onClose={() => {
+                    setOpenModal(false);
+                    closeWebSocket();
+                }}
                 sx={{
                     display: "flex",
                     justifyContent: "center",
@@ -873,7 +949,10 @@ export default function ProjectExchange(props) {
                         <Button
                             variant="outlined"
                             color="neutral"
-                            onClick={() => setOpenModal(false)}
+                            onClick={() => {
+                                setOpenModal(false)
+                                closeWebSocket();
+                            }}
                         >
                             닫기
                         </Button>
