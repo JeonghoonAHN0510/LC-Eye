@@ -21,37 +21,45 @@ export default function ProjectResult(props) {
 
     // pjnoParam(프로젝트 번호)을 받아서 서버에서 LCI input/output 리스트를 가져오는 함수
     const fetchLci = async (pjnoParam) => {
-        // 1) 서버 호출: /api/lci?pjno=...
-        //    - withCredentials: 세션/쿠키 기반 인증을 쓰는 경우 반드시 필요
-        const res = await axios.get("http://localhost:8080/api/lci", {
-            params: { pjno: pjnoParam },
-            withCredentials: true,
-        });
+        try {
+            // 1) 서버 호출: /api/lci?pjno=...
+            //    - withCredentials: 세션/쿠키 기반 인증을 쓰는 경우 반드시 필요
+            const res = await axios.get("http://localhost:8080/api/lci", {
+                params: { pjno: pjnoParam },
+                withCredentials: true,
+            });
 
-        // 2) 서버 응답에서 inputList가 배열인지 안전하게 확인
-        //    - 아니면 빈 배열로 대체해서 이후 로직에서 에러 방지
-        const inputListRaw = Array.isArray(res?.data?.inputList)
-            ? res.data.inputList
-            : [];
+            // 2) 서버 응답에서 inputList가 배열인지 안전하게 확인
+            //    - 아니면 빈 배열로 대체해서 이후 로직에서 에러 방지
+            const inputListRaw = Array.isArray(res?.data?.inputList)
+                ? res.data.inputList
+                : [];
 
-        // 3) 서버 응답에서 outputList도 동일하게 안전 처리
-        const outputListRaw = Array.isArray(res?.data?.outputList)
-            ? res.data.outputList
-            : [];
+            // 3) 서버 응답에서 outputList도 동일하게 안전 처리
+            const outputListRaw = Array.isArray(res?.data?.outputList)
+                ? res.data.outputList
+                : [];
 
-        // 4) fname(흐름명)을 기준으로 오름차순 정렬하는 유틸 함수
-        //    - 원본 배열을 훼손하지 않도록 스프레드로 복사 후 sort
-        //    - fname이 null/undefined여도 안전하게 처리
-        const sortByFnameAsc = (arr) =>
-            [...arr].sort((a, b) =>
-                String(a?.fname ?? "").localeCompare(String(b?.fname ?? ""))
-            );
+            // 4) fname(흐름명)을 기준으로 오름차순 정렬하는 유틸 함수
+            //    - 원본 배열을 훼손하지 않도록 스프레드로 복사 후 sort
+            //    - fname이 null/undefined여도 안전하게 처리
+            const sortByFnameAsc = (arr) =>
+                [...arr].sort((a, b) =>
+                    String(a?.fname ?? "").localeCompare(String(b?.fname ?? ""))
+                );
 
-        // 5) 정렬된 input/output 리스트를 객체로 반환
-        return {
-            inputList: sortByFnameAsc(inputListRaw),
-            outputList: sortByFnameAsc(outputListRaw),
-        };
+            // 5) 정렬된 input/output 리스트를 객체로 반환
+            return {
+                inputList: sortByFnameAsc(inputListRaw),
+                outputList: sortByFnameAsc(outputListRaw),
+            };
+        } catch (error) {
+            return {
+                inputList: [],
+                outputList: [],
+            };
+        } // if end
+
     };
 
     // React Query로 LCI 데이터 캐싱/조회 =============================
@@ -89,6 +97,8 @@ export default function ProjectResult(props) {
             // 페이지 입력창(텍스트)도 "1"로 리셋
             setInputPageInput("1");
             setOutputPageInput("1");
+
+            fetchLci(pjno);
         }
 
         // 의존성 배열:

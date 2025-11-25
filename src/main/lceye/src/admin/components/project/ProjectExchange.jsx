@@ -366,6 +366,7 @@ export default function ProjectExchange(props) {
         // 소켓 열기
         openWebSocket(mno);
         const loadingId = showLoading("선택된 항목 매칭중입니다...");
+        setOpenModal(true);
         setLoading(true);
 
         const selectedInputs = inputRows.filter((r) =>
