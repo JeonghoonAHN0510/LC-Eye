@@ -247,11 +247,9 @@ public class ExcelService {
             // [3.1.3] 명칭
             String pjename = defaultString(map.get("pjename") == null ? null : map.get("pjename").toString());
             // [3.1.4] 양
-            Object amountObj = map.get("pjeamount");
-            double amount = 0;
-            if (amountObj instanceof Number num) {
-                amount = num.doubleValue();
-            }
+            String amountObj = defaultString(map.get("pjeamount") == null ? null : map.get("pjeamount").toString());
+            double amount = Double.parseDouble(amountObj);
+            System.out.println("amount = " + amount);
             // [3.1.5] 단위
             String uname = defaultString(map.get("uname") == null ? null : map.get("uname").toString());
             // [3.1.6] 프로세스명
