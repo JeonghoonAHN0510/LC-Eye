@@ -126,11 +126,11 @@ export default function ProjectExchange(props) {
     }));
 
     const openWebSocket = (mno) => {
-        if(!mno){
+        if (!mno) {
             console.error("mno 없어 소켓을 열 수 없습니다.");
             return;
         }// if end
-        if(socket){
+        if (socket) {
             console.log("이미 소켓이 연결되어 있습니다.");
             return;
         }// if end
@@ -146,25 +146,25 @@ export default function ProjectExchange(props) {
         };
 
         ws.onmessage = (event) => {
-            console.log("메시지 수신",event.data);
-            try{
+            console.log("메시지 수신", event.data);
+            try {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                if(data.type === 'gemini'){
+                if (data.type === 'gemini') {
                     const geminiData = data.data;
 
-                    if(geminiData && typeof geminiData === 'object' && !Array.isArray(geminiData)){
-                        const formatted = Object.entries(geminiData).map( ([key,value]) => ({
+                    if (geminiData && typeof geminiData === 'object' && !Array.isArray(geminiData)) {
+                        const formatted = Object.entries(geminiData).map(([key, value]) => ({
                             key,
-                            value : Array.isArray(value) ? value : [value],
+                            value: Array.isArray(value) ? value : [value],
                         })) // map end
                         setMatchData(prevMatchData => {
                             const prev = Array.isArray(prevMatchData) ? prevMatchData : [];
-                            return [...prev , ...formatted];
+                            return [...prev, ...formatted];
                         });
                     }// if end
                 }// if end
-            }catch(e){
+            } catch (e) {
                 console.log(e);
             }// try end
         };
@@ -405,6 +405,7 @@ export default function ProjectExchange(props) {
     };
 
     const handleSaveMatch = () => {
+        closeWebSocket();
         Object.entries(checkedItems).forEach(([key, value]) => {
             setInputRows((prev) =>
                 prev.map((row) =>
@@ -537,6 +538,7 @@ export default function ProjectExchange(props) {
         enabled: isOpen && !!effectivePjno,
         staleTime: 1000 * 30,
         refetchOnWindowFocus: false,
+        retry: false
     });
 
     useEffect(() => {
