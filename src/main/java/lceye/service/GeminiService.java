@@ -7,24 +7,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service @RequiredArgsConstructor
 public class GeminiService {
     // [*]
     private final ProcessInfoService processInfoService;
     private final ObjectMapper mapper;
-    @Qualifier("geminiRestTemplate")
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     // [*] gemini 연동 설정
     final String MODEL_ENDPOINT ="/models/gemini-2.5-flash:generateContent";
     @Value("${gemini.api.key}")
     private String geminiApikey;
-    @Value("${gemini.api.url}")
-    private String geminiApiUrl;
     private static String CACHE_ID = null;
     private static final String CACHE_ENDPOINT = "/cachedContents";
 
@@ -34,12 +35,12 @@ public class GeminiService {
     /**
      * 입력받은 리스트 문자열들의 유사도를 분석하거나 키워드를 추출하여 맵핑합니다.
      * @param inputList 분석할 문자열 리스트
-     * @return Map<String, Set<String>> (Key: 원본 문자열, Value: 연관된 키워드/유사어 Set)
+     * @return CompletableFuture<Map<String, Set<String>>> (Key: 원본 문자열, Value: 연관된 키워드/유사어 Set)
      */
-    public Map<String, Set<String>> similarity(List<String> inputList) {
-        System.out.println("processList = "+processList);
+    public Mono<Map<String, Set<String>>> similarity(List<String> inputList) {
+        System.out.println("GeminiService.similarity");
         if (inputList == null || inputList.isEmpty()) {
-            return new HashMap<>();
+            return Mono.just(new HashMap<>());
         }// if end
         if (processList == null || processList.isEmpty()){
             processList = processInfoService.matchData().stream().map(dto ->{
@@ -49,7 +50,6 @@ public class GeminiService {
                 return map;
             }).toList();
         }// if end
-        String apiUrl = geminiApiUrl+MODEL_ENDPOINT+"?key=" + geminiApikey;
 
         // 1. 요청 프롬프트 작성
         String prompt = "당신은 LCI(전 과정목록 분석)의 번역 및 매칭프로그램입니다: " + toJsonString(inputList) +
@@ -66,23 +66,26 @@ public class GeminiService {
         content.put("parts", Collections.singletonList(part));
         requestBody.put("contents", Collections.singletonList(content));
 
-        // 3. 헤더 설정
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-        try {
-            // 4. API 호출
-            String response = restTemplate.postForObject(apiUrl, entity, String.class);
-
-            // 5. 응답 파싱
-            return parseGeminiResponse(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 에러 발생 시 빈 맵 반환 혹은 예외 던지기
-            return new HashMap<>();
-        }// try end
+        // 3. gemini 통신
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path(MODEL_ENDPOINT)
+                        .queryParam("key",geminiApikey)
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .retrieve()
+                // 에러처리
+                .onStatus(HttpStatusCode::isError, clientResponse -> {
+                    // 에러 발생 시
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(errorBody -> {
+                                throw new RuntimeException("Gemini API Error: " + clientResponse.statusCode() + ", Body: " + errorBody);
+                            });
+                })
+                .bodyToMono(String.class) // 응답 본문을 String으로 받음
+                // 매핑작업
+                .map(this::parseGeminiResponse); // Mono<String> -> Mono<Map<String,set<String>>> 변환
     }// func end
 
     // 헬퍼 메소드: 리스트를 JSON 문자열로 변환 (프롬프트 삽입용)
@@ -94,7 +97,7 @@ public class GeminiService {
         }// try end
     }// f end
 
-    // 헬퍼 메소드: Gemini 응답에서 텍스트를 추출하고 JSON을 Map으로 변환
+    // 파싱 메소드: Gemini 응답에서 텍스트를 추출하고 JSON을 Map으로 변환
     private Map<String, Set<String>> parseGeminiResponse(String jsonResponse) {
         Map<String, Set<String>> resultMap = new HashMap<>();
         try {

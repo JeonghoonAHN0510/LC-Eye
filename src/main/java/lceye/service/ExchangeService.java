@@ -1,5 +1,6 @@
 package lceye.service;
 
+import lceye.handler.WebSocketHandler;
 import lceye.model.dto.ProcessInfoDto;
 import lceye.model.dto.ProjectDto;
 import lceye.model.dto.UnitsDto;
@@ -7,7 +8,6 @@ import lceye.model.repository.ProjectRepository;
 import lceye.aop.DistributedLock;
 import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +28,7 @@ public class ExchangeService {
     private final ProcessInfoService processInfoService;
     private final ProjectRepository projectRepository;
     private final GeminiService geminiService;
+    private final WebSocketHandler socketHandler;
 
     /**
      * 투입물·산출물 저장/수정
@@ -107,6 +108,7 @@ public class ExchangeService {
     public Map<String, Set<String>> autoMatchCno(List<String> clientInput, String token) {
         if (!jwtService.validateToken(token)) return null;
         int cno = jwtService.getCnoFromClaims(token);
+        int mno = jwtService.getMnoFromClaims(token);
         List<String> companyFileNames = projectService.findByCno(cno);
         Set<String> inputSet = new HashSet<>(clientInput);
         Map<String, Set<String>> requestMap = new HashMap<>();
@@ -132,10 +134,12 @@ public class ExchangeService {
         }// for end
         Set<String> returnSet = new HashSet<>(inputSet);
         returnSet.removeAll(requestMap.keySet());
-        if (!returnSet.isEmpty() && returnSet != null) {
+        if (returnSet != null && !returnSet.isEmpty()) {
             List<String> returnList = new ArrayList<>(returnSet);
-            Map<String, Set<String>> similarityMap = geminiService.similarity(returnList);
-            requestMap.putAll(similarityMap);
+            geminiService.similarity(returnList)
+                    .subscribe(resultMap -> {
+                        socketHandler.sendMessage(mno,resultMap);
+                    });
         }// if end
         return new HashMap<>(requestMap);
     }// func end
