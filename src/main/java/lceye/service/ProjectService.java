@@ -8,7 +8,7 @@ import lceye.model.mapper.ProjectMapper;
 import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.UnitsRepository;
-import lceye.util.aop.DistributedLock;
+import lceye.aop.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

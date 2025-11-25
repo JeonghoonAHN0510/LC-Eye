@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lceye.service.ExcelService;
-import lceye.util.aop.SessionToken;
+import lceye.aop.SessionToken;
 import lombok.RequiredArgsConstructor;
 
 @RestController

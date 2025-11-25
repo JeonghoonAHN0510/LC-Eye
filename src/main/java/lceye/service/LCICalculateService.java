@@ -6,7 +6,7 @@ import lceye.model.entity.ProjectResultFileEntity;
 import lceye.model.repository.MemberRepository;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.ProjectResultFileRepository;
-import lceye.util.aop.DistributedLock;
+import lceye.aop.DistributedLock;
 import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
 

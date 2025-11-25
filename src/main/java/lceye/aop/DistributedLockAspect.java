@@ -1,4 +1,4 @@
-package lceye.util.aop;
+package lceye.aop;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -21,7 +21,7 @@ public class DistributedLockAspect {
     private final RedissonClient redissonClient;
     private final AopTransaction aopTransaction;
 
-    @Around("@annotation(lceye.util.aop.DistributedLock)")
+    @Around("@annotation(lceye.aop.DistributedLock)")
     public Object distributedLock(ProceedingJoinPoint joinPoint) throws Throwable {
         // 1. 메소드 정보와 어노테이션 가져오기
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

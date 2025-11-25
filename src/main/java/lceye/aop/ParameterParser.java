@@ -1,4 +1,4 @@
-package lceye.util.aop;
+package lceye.aop;
 
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;

@@ -19,7 +19,7 @@ import lceye.model.dto.ExcelProjectDto;
 import lceye.model.mapper.ExcelProjectMapper;
 import lceye.model.repository.ProjectRepository;
 import lceye.model.repository.ProjectResultFileRepository;
-import lceye.util.aop.DistributedLock;
+import lceye.aop.DistributedLock;
 import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
 
