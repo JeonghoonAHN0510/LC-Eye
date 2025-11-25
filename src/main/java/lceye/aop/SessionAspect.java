@@ -14,7 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lceye.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -65,6 +67,22 @@ public class SessionAspect {
                 } // if end
             } // if end
         } // for end
-        return joinPoint.proceed(args);
+        // --- [시간 측정 시작] ---
+        long startTime = System.currentTimeMillis();
+
+        // 실제 컨트롤러 메서드 실행
+        Object result = joinPoint.proceed(args);
+
+        // 실행 시간 측정 종료 및 로그 출력
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        // 어떤 컨트롤러의 메서드가 얼마나 걸렸는지 출력 (예: ProjectController.getList)
+        String methodName = signature.getDeclaringType().getSimpleName() + "." + signature.getName();
+
+        log.info("⏱️ 실행 시간: {} ms | 메서드: {}", duration, methodName);
+        // =========================================================
+
+        return result;
     } // func end
 } // class end

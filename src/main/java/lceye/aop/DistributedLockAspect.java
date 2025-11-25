@@ -51,7 +51,19 @@ public class DistributedLockAspect {
             // 5. 락 획득에 성공했다면, 비지니스 로직 실행
             // 트랜잭션을 보장하기 위해서 클래스 분리
             log.info("락 획득 성공 - 키: {}", lockKey);
-            return aopTransaction.proceed(joinPoint);
+            // --- [시간 측정 시작] ---
+            long startTime = System.currentTimeMillis();
+
+            // 트랜잭션을 보장하기 위해 분리된 클래스의 메서드 실행
+            Object result = aopTransaction.proceed(joinPoint);
+
+            // --- [시간 측정 종료] ---
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+
+            log.info("⏱️ 실행 시간: {} ms | 키: {}", duration, lockKey);
+
+            return result;
         } catch (InterruptedException e) {
             throw new InterruptedException();
         } finally {
