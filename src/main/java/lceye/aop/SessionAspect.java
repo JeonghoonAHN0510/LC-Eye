@@ -12,10 +12,14 @@ import java.lang.reflect.Parameter;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lceye.service.JwtService;
+import lombok.RequiredArgsConstructor;
 
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class SessionAspect {
+    private final JwtService jwtService;
 
     @Around("execution(* lceye.controller..*(..))")
     public Object injectToken(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -36,12 +40,21 @@ public class SessionAspect {
             } // if end
         } // if end
 
-        // 2. 컨트롤러 메소드의 매개변수 정보 가져오기
+        // 2. 토큰 유효성 검사 (Token Validation)
+        if (token != null) {
+            boolean isValid = jwtService.validateToken(token);
+
+            if (!isValid) {
+                throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+            } // if end
+        } // if end
+
+        // 3. 컨트롤러 메소드의 매개변수 정보 가져오기
         Object[] args = joinPoint.getArgs();
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Parameter[] parameters = signature.getMethod().getParameters();
 
-        // 3. 매개변수를 순회하면서 @SessionToken이 붙은 곳 찾기
+        // 4. 매개변수를 순회하면서 @SessionToken이 붙은 곳 찾기
         for (int i = 0; i < parameters.length; i++){
             // 3.1. SessionToken이 붙은 매개변수를 찾고
             if (parameters[i].isAnnotationPresent(SessionToken.class)){
