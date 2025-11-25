@@ -33,15 +33,18 @@ export default function UnitSelector({
 
   // value prop이 변경될 때 선택 상태 동기화 ==============================
   useEffect(() => {
-    if (!value) {
-      setSelectedGroup(null);
-      setSelectedUnit(null);
-      return;
+    // 1. 외부에서 들어온 value(상세단위 ID)가 있을 경우: 그룹과 단위를 모두 맞춰줌
+    if (value) {
+      const unit = units.find((u) => u.uno === value);
+      if (unit) {
+        setSelectedGroup(unit.ugno);
+        setSelectedUnit(unit.uno);
+      }
     }
-    const unit = units.find((u) => u.uno === value);
-    if (!unit) return;
-    setSelectedGroup(unit.ugno);
-    setSelectedUnit(unit.uno);
+    // 2. value가 null인 경우
+    else {
+      setSelectedUnit(null);
+    }
   }, [units, value]);
 
   // 단위 그룹 변경 핸들러 ==============================================
