@@ -23,7 +23,6 @@ public class ExchangeService {
     private final FileUtil fileUtil;
     private final JwtService jwtService;
     private final ProjectService projectService;
-    private final TranslationService translationService;
     private final UnitsService unitsService;
     private final ProcessInfoService processInfoService;
     private final ProjectRepository projectRepository;
@@ -210,10 +209,13 @@ public class ExchangeService {
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
+        // resultFileName 꺼내서
         if (dto != null) {
             boolean result = fileUtil.deleteFile("exchange", dto.getPjfilename());
+            // 여기서 파일 삭제 진행
             if (result) {
                 boolean results = projectService.deletePjfilename(pjno);
+                // 여기서 DB 파일명 null 처리
                 if (results) return true;
             }// if end
         }// if end
@@ -274,6 +276,8 @@ public class ExchangeService {
             String filename = projectRepository.findById(pjno).get().getPjfilename();
             // [3] filename으로 json 파일 불러오기
             Map<String, Object> inOutInfo = fileUtil.readFile("exchange", filename);
+            System.out.println("inOutInfo = " + inOutInfo);
+            if (inOutInfo == null || inOutInfo.isEmpty()) return null;
             // [4] exchanges list 가져오기
             List<Map<String, Object>> exchanges = (List<Map<String, Object>>) inOutInfo.get("exchanges");
             // [5] exchanges 에서 input과 output 리스트를 각각 만들기

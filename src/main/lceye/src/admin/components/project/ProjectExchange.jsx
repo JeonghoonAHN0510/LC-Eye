@@ -129,11 +129,11 @@ export default function ProjectExchange(props) {
     }));
 
     const openWebSocket = (mno) => {
-        if(!mno){
+        if (!mno) {
             console.error("mno 없어 소켓을 열 수 없습니다.");
             return;
         }// if end
-        if(socket){
+        if (socket) {
             console.log("이미 소켓이 연결되어 있습니다.");
             return;
         }// if end
@@ -149,11 +149,11 @@ export default function ProjectExchange(props) {
         };
 
         ws.onmessage = (event) => {
-            console.log("메시지 수신",event.data);
-            try{
+            console.log("메시지 수신", event.data);
+            try {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                if(data.type === 'gemini'){
+                if (data.type === 'gemini') {
                     const geminiData = data.data;
                     // Gemini가 처리한 항목 Key Set
 
@@ -168,17 +168,17 @@ export default function ProjectExchange(props) {
                         const nextMatchData = new Map();
                         let pendingCount = 0; // 아직 매칭 중인 항목 카운트
 
-                        // 기존 matchData 순회 
+                        // 기존 matchData 순회
                         prevMatchData.forEach(item => {
                             const key = item.key;
                             let currentItem = item;
-                            
+
                             if (formetted.has(key)) {
                                 // Gemini 결과가 있으면 덮어쓰기
                                 currentItem = { key, value: formetted.get(key) };
                             } // if end
                             nextMatchData.set(key, currentItem);
-                            
+
                             // 업데이트된 항목이 여전히 "매칭 중..."인지 확인
                             if (currentItem.value && currentItem.value[0] === "매칭 중...") {
                                 pendingCount++;
@@ -188,15 +188,15 @@ export default function ProjectExchange(props) {
                         // 아직 매칭 중인 항목이 남아있는지 확인하여 isMatch 상태 업데이트
                         if (pendingCount === 0) {
                             setIsMatch(false);
-                            // 모든 작업 완료 시 로딩 UI 해제 
-                            // hideLoading(loadingId); 
+                            // 모든 작업 완료 시 로딩 UI 해제
+                            // hideLoading(loadingId);
                         }// if end
-                        
+
                         return Array.from(nextMatchData.values());
                     }); // setMatchData end
                     }// if end
                 }// if end
-            }catch(e){
+            } catch (e) {
                 console.log(e);
             }// try end
         };
@@ -534,8 +534,8 @@ export default function ProjectExchange(props) {
         const allRows = [...inputRows, ...outputRows];
         const checkFields = ['pjename', 'pjeamount', 'uname', 'uno'];
 
-        const resultFields = allRows.some( row => 
-            checkFields.some( field => 
+        const resultFields = allRows.some( row =>
+            checkFields.some( field =>
                 !row[field] || String(row[field]).trim() === "" )
         );
 
@@ -572,7 +572,7 @@ export default function ProjectExchange(props) {
         } catch (e) {
             console.error("[saveIOInfo error]", e);
         }
-    };// f end
+    };
 
     const fetchProjectExchange = async (pjnoParam) => {
         const res = await axios.get("http://localhost:8080/api/inout", {
@@ -595,6 +595,7 @@ export default function ProjectExchange(props) {
         enabled: isOpen && !!effectivePjno,
         staleTime: 1000 * 30,
         refetchOnWindowFocus: false,
+        retry: false
     });
 
     useEffect(() => {

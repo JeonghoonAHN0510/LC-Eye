@@ -28,7 +28,6 @@ public class LCICalculateService {
     private final JwtService jwtService;
     private final FileUtil fileUtil;
     private final ProjectResultFileRepository projectResultFileRepository;
-    private final MemberRepository memberRepository;
     private final RedisTemplate<String, Object> processRedisTemplate;
 
     /**
@@ -365,6 +364,7 @@ public class LCICalculateService {
         Map<String, Object> file = fileUtil.readFile("result", fileName);
         // [3] results 항목만 가져오기
         List<Map<String, Object>> results = (List<Map<String, Object>>) file.get("results");
+        if (results == null || results.isEmpty()) return null;
         // [4] result에서 input과 output을 구별
         List<Map<String, Object>> inputList = new ArrayList<>();
         List<Map<String, Object>> outputList = new ArrayList<>();
