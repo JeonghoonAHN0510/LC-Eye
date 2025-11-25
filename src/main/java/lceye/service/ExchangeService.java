@@ -6,7 +6,6 @@ import lceye.model.dto.ProjectDto;
 import lceye.model.dto.UnitsDto;
 import lceye.model.repository.ProjectRepository;
 import lceye.aop.DistributedLock;
-import lceye.model.repository.ProjectResultFileRepository;
 import lceye.util.file.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ public class ExchangeService {
     private final FileUtil fileUtil;
     private final JwtService jwtService;
     private final ProjectService projectService;
-    private final ProjectResultFileService projectResultFileService;
     private final UnitsService unitsService;
     private final ProcessInfoService processInfoService;
     private final ProjectRepository projectRepository;
@@ -205,16 +203,14 @@ public class ExchangeService {
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
-        String LciFileName = projectResultFileService.getFileName(pjno);
-        System.out.println("LciFileName = " + LciFileName);
-        if (dto != null || LciFileName != null) {
+        // resultFileName 꺼내서
+        if (dto != null) {
             boolean result = fileUtil.deleteFile("exchange", dto.getPjfilename());
-            boolean result2 = fileUtil.deleteFile("result", LciFileName);
-            System.out.println("result2 = " + result2);
-            if (result && result2) {
+            // 여기서 파일 삭제 진행
+            if (result) {
                 boolean results = projectService.deletePjfilename(pjno);
-                projectResultFileService.deleteFileName(pjno);
-                return results;
+                // 여기서 DB 파일명 null 처리
+                if (results) return true;
             }// if end
         }// if end
         return false;

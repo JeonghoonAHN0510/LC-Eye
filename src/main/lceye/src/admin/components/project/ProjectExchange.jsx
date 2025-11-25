@@ -345,6 +345,7 @@ export default function ProjectExchange(props) {
         // 소켓 열기
         openWebSocket(mno);
         const loadingId = showLoading("최적화 매칭중입니다...");
+        setOpenModal(true);
         setLoading(true);
         const allPjenames = [...inputRows, ...outputRows].map(
             (row) => row.pjename
