@@ -28,6 +28,7 @@ public class ExchangeService {
     private final ProjectRepository projectRepository;
     private final GeminiService geminiService;
     private final WebSocketHandler socketHandler;
+    private final ProjectResultFileService projectResultFileService;
 
     /**
      * 투입물·산출물 저장/수정
@@ -209,12 +210,16 @@ public class ExchangeService {
     public boolean clearIOInfo(String token, int pjno) {
         if (!jwtService.validateToken(token)) return false;
         ProjectDto dto = projectService.findByPjno(pjno);
-        // resultFileName 꺼내서
+        String resultFileName = projectResultFileService.getResultFileName(pjno);
+        System.out.println("resultFileName = " + resultFileName);
         if (dto != null) {
             boolean result = fileUtil.deleteFile("exchange", dto.getPjfilename());
+            boolean result2 = fileUtil.deleteFile("result", resultFileName);
+            System.out.println("result2 = " + result2);
             // 여기서 파일 삭제 진행
             if (result) {
                 boolean results = projectService.deletePjfilename(pjno);
+                projectResultFileService.deleteResultFileName(pjno);
                 // 여기서 DB 파일명 null 처리
                 if (results) return true;
             }// if end
