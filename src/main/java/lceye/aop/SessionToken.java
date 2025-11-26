@@ -9,5 +9,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)      // 매개변수에 붙일 수 있는 어노테이션 정의
 public @interface SessionToken {
 
-
 } // annotation end

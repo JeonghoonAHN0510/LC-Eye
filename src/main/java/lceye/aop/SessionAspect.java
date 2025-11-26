@@ -23,6 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 public class SessionAspect {
     private final JwtService jwtService;
 
+    /**
+     * 메소드 실행 전, Session에서 Token을 추출해서 주입해주는 역할
+     *
+     * @param joinPoint 메소드 실행제어
+     * @return 메소드 실행 및 반환
+     * @throws Throwable
+     * @author AhnJH
+     */
     @Around("execution(* lceye.controller..*(..))")
     public Object injectToken(ProceedingJoinPoint joinPoint) throws Throwable {
         // 1. 현재 요청에서 세션과 토큰 추출
@@ -67,7 +75,8 @@ public class SessionAspect {
                 } // if end
             } // if end
         } // for end
-        // --- [시간 측정 시작] ---
+
+        // =========================== [시간 측정 시작] ===========================
         long startTime = System.currentTimeMillis();
 
         // 실제 컨트롤러 메서드 실행

@@ -37,6 +37,4 @@ public interface ExcelProjectMapper {
                 AND p.pjno = #{pjno};
             """)
     ExcelProjectDto readByCnoAndPjno(int cno, int pjno);
-
-
 } // Interface end

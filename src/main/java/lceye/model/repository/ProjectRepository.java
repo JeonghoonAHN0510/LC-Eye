@@ -1,6 +1,5 @@
 package lceye.model.repository;
 
-import lceye.model.entity.MemberEntity;
 import lceye.model.entity.ProjectEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

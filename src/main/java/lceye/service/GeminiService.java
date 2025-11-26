@@ -4,17 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @Service @RequiredArgsConstructor
 public class GeminiService {
@@ -26,8 +22,6 @@ public class GeminiService {
     final String MODEL_ENDPOINT ="/models/gemini-2.5-flash:generateContent";
     @Value("${gemini.api.key}")
     private String geminiApikey;
-    private static String CACHE_ID = null;
-    private static final String CACHE_ENDPOINT = "/cachedContents";
 
     // process 데이터
     List<Map<String,String>> processList = null;
@@ -123,5 +117,4 @@ public class GeminiService {
         }// try end
         return resultMap;
     }// f end
-
 }// class end

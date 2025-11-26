@@ -1,8 +1,6 @@
 package lceye.controller;
 
 import lceye.service.ExchangeService;
-import lceye.service.GeminiService;
-import lceye.service.TranslationService;
 import lceye.aop.SessionToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,6 @@ public class ExchangeController {
     /**
      * 서비스 불러오기
      */
-    private final GeminiService geminiService;
     private final ExchangeService exchangeService;
 
     //@PostMapping("/auto") // localhost:8080/api/inout/auto
@@ -109,5 +106,4 @@ public class ExchangeController {
         }
         return ResponseEntity.ok(result);
     } // func end
-
 } // class end

@@ -228,43 +228,6 @@ public class ExchangeService {
     }// func end
 
     /**
-     * 입력받은 투입물·산출물을 번역해서 db데이터와 유사도 측정
-     *
-     * @param clientInput 입력받은 투입물·산출물
-     * @return Map<String, Set < String>>
-     * @author 민성호
-     */
-    //public Map<String, Set<String>> similarity(List<String> clientInput) {
-    //    List<String> transInput = translationService.TransInput(clientInput);
-    //    List<ProcessInfoDto> processInfoEntities = processInfoService.getProcessInfo();
-    //    JaroWinklerSimilarity similarity = new JaroWinklerSimilarity();
-    //    final double benchmark = 0.90; // 90% 기준
-    //    Map<String, Set<String>> resultMatches = new HashMap<>();
-    //    for (int i = 0; i < transInput.size(); i++) {
-    //        String client = clientInput.get(i);
-    //        String input = transInput.get(i);
-    //        Set<String> matches = new HashSet<>();
-    //        if ("Routing".equals(input)) input = "diesel";
-    //        String lowerInput = input.toLowerCase();
-    //        for (ProcessInfoDto dto : processInfoEntities) {
-    //            String lowerPcdesc = dto.getPcdesc().toLowerCase();
-    //            String lowerPcname = dto.getPcname().toLowerCase();
-    //            Double scoreName = similarity.apply(lowerInput, lowerPcname);
-    //            Double scoreDesc = similarity.apply(lowerInput, lowerPcdesc);
-    //            boolean contains = lowerPcname.contains(lowerInput);
-    //            boolean containsDesc = lowerPcdesc.contains(lowerInput);
-    //            if (scoreName >= benchmark || contains || scoreDesc >= benchmark || containsDesc) { // 유사도 90프로 이상
-    //                matches.add(dto.getPcname());
-    //            }// if end
-    //        }// for end
-    //        if (!matches.isEmpty()) {
-    //            resultMatches.put(client, matches);
-    //        }// if end
-    //    }// for end
-    //    return new HashMap<>(resultMatches);
-    //}// func end
-
-    /**
      * [IO-03] 투입물·산출물 정보 조회
      * <p>
      * 프로젝트 번호를 매개변수로 받아 투입물·산출물 json파일에서 exchanges 정보를 반환한다.
