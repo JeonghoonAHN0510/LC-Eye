@@ -6,22 +6,30 @@
 > 🔗 프로젝트Notion [바로가기](https://lceye.notion.site/LC-Eye-2a2094d4983480369aa4fe1a6163688f) <br>
 > 🔗 단일 서버용 GitHub [GitHub 바로가기](https://github.com/JeonghoonAHN0510/LC-Eye) <br>
 > 🔗 다중 서버용 GitHub [Back_Member](https://github.com/JeonghoonAHN0510/LC-Eye_Member) &nbsp;|&nbsp; [Back_Project](https://github.com/JeonghoonAHN0510/LC-Eye_Project) &nbsp;|&nbsp; [React](https://github.com/JeonghoonAHN0510/LC-Eye_React) &nbsp;|&nbsp; [Flutter](https://github.com/msh-94/lc_eye_project) <br>
-> 📃 발표자료 [PDF 바로가기](https://drive.google.com/file/d/139mwUQxmyiBQZLN5WCTaBkCL4sBBORIk/view?usp=sharing)) <br>
+> 📃 발표자료 [PDF 바로가기](https://drive.google.com/file/d/139mwUQxmyiBQZLN5WCTaBkCL4sBBORIk/view?usp=sharing) <br>
+> 💻 시연영상 [영상 바로보기](https://drive.google.com/file/d/1objnc56YuQeHpYGFZkyLe-8hU9B_7Fpt/view)
 
+----
+
+> ※ 참고사항
+> 본 Repository는 단일 서버에서 모든 기능을 제공하고 있습니다.
+> 다중 분리 서버와 관련된 내용은 상단에 **\[다중 서버용 GitHub]** 를 참고하여 주시기 바랍니다.
+ 
 -----
 
 ## 🧭 프로젝트 개요
 
 **LC-Eye**는 제품·공정 단위의 투입물·산출물 데이터를 기반으로 환경부하를 정량화하는 툴입니다.
-서비스의 확장성과 유지보수성을 높이기 위해 \*\*Member Server(회원/인증)\*\*와 \*\*Project Server(계산/관리)\*\*로 백엔드를 분리하였으며, **Redis Pub/Sub**를 통해 서버 간 데이터 정합성을 유지합니다.
-사용자의 기존 입출력 연결 이력을 기반으로 키워드-프로세스 맞춤 기능과 Gemini LLM 활용 키워드 매칭 서비스를 제공합니다.
-AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적 데이터 처리의 안전성과 확장성을 동시에 확보하였습니다.
 
-  - **개발기간:** 2025.11.05 \~ 2025.11.27 (3주)
+AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적 데이터 처리의 안전성과 확장성을 동시에 확보하였습니다.
+사용자의 기존 입출력 연결 이력을 기반으로 키워드-프로세스 맞춤 기능과 Gemini LLM 활용 키워드 매칭 서비스를 제공합니다.
+서비스의 확장성과 유지보수성을 높이기 위해 \*\*Member Server(회원/인증)\*\*와 \*\*Project Server(계산/관리)\*\*로 백엔드를 분리하였으며, **Redis Pub/Sub**를 통해 서버 간 데이터 정합성을 유지합니다.
+
+  - **개발기간:** 2025.11.05 ~ 2025.11.27 (3주)
   - **팀명:** LC-Eye
   - **인원:** 3명
     - 옹태경 - **팀장** / LCI 계산 로직 / AWS S3 파일 처리 / Front 총괄 / 발표
-    - 민성호 - **Process JSON 추천 로직** / 투입물·산출물·process 키워드 추천 로직 / Gemini LLM / Flutter 총괄
+    - 민성호 - **Process JSON 추천 로직** / 투입물·산출물·process 키워드 기반 process 추천 로직 / Gemini LLM 활용 process 추천 / Flutter 총괄
     - 안정훈 - **MSA 기반 서버 분리** / 서버 간 통신 / Redisson 분산 락 / 버전 관리 / Front 공통 레이아웃
 
 -----
@@ -30,10 +38,10 @@ AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적
 
 | 구분 | 설명 |
 |------|------|
+| ♻ **LCI 계산 알고리즘 구현** | 사용자 입력 데이터를 기반으로 단위공정별 투입물·산출물 총량을 계산 <br> AWS S3 Cloud Service · Redis Caching 활용한 데이터 처리 최적화 |
+| 🔁 **자동 매칭 알고리즘 구현** | 사용자의 공정 또는 재료명 입력 데이터와 DB내 표준 flow 데이터와의 AI 자동 매칭 서비스 구축 |
 | ☁️ **하이브리드 스토리지** | 메타데이터(MySQL)와 대용량 Flow·Process 데이터(AWS S3)를 분리 저장하여 성능 최적화 |
 | 🏗️ **다중 서버 구축** | `Member`(8080)와 `Project`(8081) 서버 분리를 통해 도메인별 독립성 및 확장성 확보 <br> 📡 **비동기 통신 동기화** <br> Redis Pub/Sub를 활용하여 분리된 서버 간 데이터를 실시간으로 연동 (CompletableFuture 활용) <br> 🔒 **분산 환경 데이터 정합성**<br> Redisson 분산 락을 도입하여 다중 서버 환경에서의 동시성 문제(Race Condition) 해결 |
-| 🔁 **자동 매칭 알고리즘 구현** | 사용자의 공정 또는 재료명 입력 데이터와 DB내 표준 flow 데이터와의 AI 자동 매칭 서비스 구축 |
-| ♻ **LCI 계산 알고리즘 구현** | 사용자 입력 데이터를 기반으로 단위공정별 투입물·산출물 총량을 계산 <br> AWS S3 Cloud Service · Redis Caching 활용한 데이터 처리 최적화 |
 
 -----
 
@@ -53,22 +61,29 @@ AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적
 
 ## 🧱 아키텍처 개요
 
-### 🗂 Multi-Server Architecture
+### 🗂 1. Multi-Server Architecture
 
 시스템은 기능적 응집도를 높이기 위해 두 개의 독립된 Spring Boot 애플리케이션으로 구성됩니다.
 
-1.  **Client (React / Flutter Server):** 사용자 인터페이스 담당, API Gateway 역할 없이 각 서버 API 호출 (CORS 설정)
-2.  **Member Server (Port 8080):** 회원가입, 로그인(JWT 발급), 회사 정보 관리, 권한 인증 담당
-3.  **Project Server (Port 8081):** 프로젝트 생성, LCI 계산, 투입/산출물 관리, 엑셀 리포팅 담당
-4.  **Redis (Message Broker):** 두 서버 간의 데이터 교환 및 분산 락 관리
+1)  **Client (React / Flutter Server):** 사용자 인터페이스 담당, API Gateway 역할 없이 각 서버 API 호출 (CORS 설정)
+2)  **Member Server (Port 8080):** 회원가입, 로그인(JWT 발급), 회사 정보 관리, 권한 인증 담당
+3)  **Project Server (Port 8081):** 프로젝트 생성, LCI 계산, 투입/산출물 관리, 엑셀 리포팅 담당
+4)  **Redis (Message Broker):** 두 서버 간의 데이터 교환 및 분산 락 관리
 
-### 🔄 Inter-Service Communication (Redis Pub/Sub)
+### 2) 🔄 Inter-Service Communication (Redis Pub/Sub)
 
 HTTP 통신 대신 **Redis Pub/Sub**를 사용하여 마이크로서비스 간 결합도를 낮췄습니다.
 
   * **요청 흐름:** Project 서버에서 회원 정보 필요 시 → `member-request` 채널 발행
   * **응답 흐름:** Member 서버에서 구독 중 메시지 수신 → DB 조회 후 `member-response` 채널로 응답
   * **동기화 처리:** `CompletableFuture`를 사용하여 비동기 응답을 동기 요청처럼 처리, API 응답 속도 보장
+
+### 3) AWS S3 Cloud Service + Redis Caching
+
+AWS S3와 Redis를 결합한 구조는 대용량 정적 데이터 처리의 안정성과 확장성을 동시에 확보할 수 있는 운영 기반을 마련하였습니다.
+
+1) **AWS S3** : 대규모 JSON 파일을 효율적으로 관리하므로 서버의 저장 및 관리 부담을 최소화
+2) **Redis Caching** : 반복적인 S3 접근에 대한 불필요한 통신을 최소화하여 데이터 조회속도와 시스템 응답성과 처리 효율성을 제고
 
 -----
 
