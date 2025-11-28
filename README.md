@@ -3,9 +3,10 @@
 # 👀 LC-Eye – 경량형 LCI(Life Cycle Inventory) 계산 시스템
 
 > **Redis Pub/Sub 기반의 다중 서버 아키텍처와 React·Flutter를 도입한 전과정목록분석 플랫폼** <br>
-> 🔗 [프로젝트 노션 바로가기](https://lceye.notion.site/LC-Eye-2a2094d4983480369aa4fe1a6163688f) <br>
+> 🔗 프로젝트Notion [바로가기](https://lceye.notion.site/LC-Eye-2a2094d4983480369aa4fe1a6163688f) <br>
 > 🔗 단일 서버용 GitHub [GitHub 바로가기](https://github.com/JeonghoonAHN0510/LC-Eye) <br>
 > 🔗 다중 서버용 GitHub [Back_Member](https://github.com/JeonghoonAHN0510/LC-Eye_Member) &nbsp;|&nbsp; [Back_Project](https://github.com/JeonghoonAHN0510/LC-Eye_Project) &nbsp;|&nbsp; [React](https://github.com/JeonghoonAHN0510/LC-Eye_React) &nbsp;|&nbsp; [Flutter](https://github.com/msh-94/lc_eye_project) <br>
+> 📃 발표자료 [PDF 바로가기](https://drive.google.com/file/d/139mwUQxmyiBQZLN5WCTaBkCL4sBBORIk/view?usp=sharing)) <br>
 
 -----
 
@@ -46,7 +47,7 @@ AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적
 | **Middleware** | **Redis** (Pub/Sub, Session, Cache) |
 | **Database** | MySQL (RDB), AWS S3 (JSON Storage) |
 | **Collaboration** | GitHub, Notion |
-| **etc** | apoche POI, Gemini |
+| **etc** | apoche POI, Gemini, Socket |
 
 -----
 
