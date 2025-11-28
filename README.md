@@ -125,6 +125,77 @@ sequenceDiagram
 
 -----
 
+## 🗃️ Redisson 분산 삭
+
+```mermaid
+sequenceDiagram
+participant A as 👤 Client A
+participant R as 🔴 Redis
+participant B as 👤 Client B
+participant D as 💾 DB/File
+
+    Note over A, R: 1️⃣ Client A 락 획득
+    A->>R: 1. tryLock()
+    R-->>A: 2. OK (Lock Acquired)
+
+    Note over B, R: 2️⃣ Client B 대기
+    B->>R: 3. tryLock()
+    R-->>B: 4. Fail (Subscribe & Wait)
+
+    Note over A, D: 3️⃣ Critical Section (A)
+    A->>D: 5. 비즈니스 로직 수행
+    D-->>A: 6. 데이터 업데이트 완료
+
+    Note over A, R: 4️⃣ 락 해제 및 알림
+    A->>R: 7. unlock()
+    R-->>B: 8. Publish (Wake Up!)
+
+    Note over B, R: 5️⃣ Client B 락 획득
+    B->>R: 9. tryLock() (재시도)
+    R-->>B: 10. OK (Lock Acquired)
+
+    Note over B, D: 6️⃣ Critical Section (B)
+    B->>D: 11. 비즈니스 로직 수행
+    D-->>B: 12. 데이터 업데이트 완료
+    
+    B->>R: 13. unlock()
+
+```
+
+-----
+
+## 🗃️ AWS S3 & Redis Caching 활용 LCI 계산 최적화
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller as LCICalculateController
+    participant Service as LCICalculateService
+    participant Redis as Redis (process:*)
+    participant S3 as S3 (exchange/, processJSON/, result/)
+    participant DB as project_resultfile
+
+    Client->>Controller: POST /lci (pjno, token)
+    Controller->>Service: calcLCI(pjno, token)
+    Service->>S3: GET exchange/{pjfilename}.json\n(FileUtil.readFile)
+    loop for each processExchange
+        Service->>Redis: GET process:{puuid}
+        alt cache miss
+            Service->>S3: GET processJSON/{puuid}.json\n(FileUtil.searchProcessJson)
+            Service->>Redis: SET process:{puuid} TTL 30m
+        end
+        Service->>Service: accumulate flow amounts
+    end
+    Service->>S3: PUT result/{cno_pjno_result_yyyyMMdd_HHmm}.json\n(FileUtil.uploadFile)
+    Service->>DB: INSERT project_resultfile(prfname,...)
+    Service-->>Controller: boolean success
+    Controller-->>Client: 200 OK
+
+
+```
+
+-----
+
 ## 🔍 코드 구조 (Multi-Module)
 
 ```bash
