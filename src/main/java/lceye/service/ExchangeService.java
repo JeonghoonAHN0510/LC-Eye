@@ -123,9 +123,11 @@ public class ExchangeService {
                             Object pNameObj = exchange.get("pname");
                             // pjeName이 String 타입이고, Set에 포함되는지 확인
                             if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
-                                String pName = pNameObj != null ? pNameObj.toString() : "N/A";
+                                String pName = pNameObj != null && pNameObj != "" ? pNameObj.toString() : "";
                                 // 매칭된 결과를 해당 Key의 리스트에 추가 (덮어쓰기 방지)
-                                requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
+                                if(!pName.trim().isEmpty()){
+                                    requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
+                                }// if end
                             }// if end
                         }// if end
                     }// for end
@@ -177,10 +179,12 @@ public class ExchangeService {
 
                             // pjeName이 문자열이고, clientInput Set에 포함되는지 확인
                             if (pjeNameObj instanceof String pjeName && inputSet.contains(pjeName)) {
-                                String pName = pNameObj != null ? pNameObj.toString() : "N/A";
+                                String pName = pNameObj != null && pNameObj != "" ? pNameObj.toString() : "";
 
                                 // 매칭된 결과를 리스트에 추가 (덮어쓰기 방지)
-                                requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
+                                if(!pName.trim().isEmpty()){
+                                    requestMap.computeIfAbsent(pjeName, k -> new HashSet<>()).add(pName);
+                                }// if end
                             }// if end
                         }// if end
                     }// for end
@@ -194,7 +198,6 @@ public class ExchangeService {
             Map<String, Set<String>> cnoMap = autoMatchCno(returnList, token);
             requestMap.putAll(cnoMap);
         }// if end
-        // 최종 반환 타입에 맞게 Map<String, Object>로 반환
         return new HashMap<>(requestMap);
     }// func end
 
