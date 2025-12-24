@@ -61,7 +61,7 @@ AWS S3와 Redis Caching를 결합하여 LCI 계산 과정에서 대용량 정적
 
 ## 🧱 아키텍처 개요
 
-### 🗂 1. Multi-Server Architecture
+### 1) 🗂 Multi-Server Architecture
 
 시스템은 기능적 응집도를 높이기 위해 두 개의 독립된 Spring Boot 애플리케이션으로 구성됩니다.
 
@@ -143,7 +143,7 @@ sequenceDiagram
 
 -----
 
-## 🗃️ Redisson 분산 삭
+## 🗃️ Redisson 분산 락
 
 ```mermaid
 sequenceDiagram
